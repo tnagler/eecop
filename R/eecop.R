@@ -119,7 +119,7 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
     is.numeric(t)
   )
 
-  tol <- sd(y) / NROW(y)
+  tol <- sd(object$y) / NROW(object$y)
   out <- apply(
     x, 1, predict_one_x,
     psi = get_psi(type, object$y),
