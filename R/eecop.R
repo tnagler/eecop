@@ -115,20 +115,29 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   x <- as.matrix(x)
   assert_that(
     ncol(x) == object$p,
-    (is.string(type) & (type %in% c("expectile", "quantile"))) |
-      is.function(type),
-    is.scalar(t)
+    (is.string(type) & (type %in% c("expectile", "quantile"))) | is.function(type),
+    is.numeric(t)
   )
-  apply(x, 1, predict_one,
+
+  tol <- sd(object$y) / NROW(object$y)
+  out <- apply(
+    x, 1, predict_one_x,
     psi = get_psi(type, object$y),
     t = t,
     w = object$w,
-    range = range(object$y)
+    range = range(object$y),
+    tol = tol
   )
+  matrix(unlist(out), NROW(x), length(t), byrow = TRUE)
 }
 
-predict_one <- function(x, psi, t, w, range) {
-  Eg <- function(theta) mean(psi(theta, t) * w(t(x)))
+predict_one_x <- function(x, psi, t, w, range, tol) {
+  w_x <- w(t(x))
+  lapply(t, predict_one_t, psi = psi, w_x = w_x, range = range, tol = tol)
+}
+
+predict_one_t <- function(t, psi, w_x, range, tol) {
+  Eg <- function(theta) mean(psi(theta, t) * w_x)
   range <- range + c(-0.25, 0.25) * diff(range)
-  uniroot(Eg, range)$root
+  uniroot(Eg, range, tol = tol)$root
 }
