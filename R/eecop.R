@@ -123,7 +123,7 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
     psi = get_psi(type, object$y),
     t = t,
     w = object$w,
-    range = range(y)
+    range = range(object$y)
   )
 }
 
