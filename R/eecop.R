@@ -62,8 +62,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
             n = n,
             q = q,
             p = p,
-            w = w,
-            range = range(y)
+            w = w
         ),
         class = "eecop"
     )
@@ -120,11 +119,11 @@ predict.eecop <- function(object, x, type = "exp", t = 0.5, ...) {
           psi = get_psi(type, object$y),
           t = t,
           w = object$w,
-          range = object$range)
+          range = range(y))
 }
 
 predict_one <- function(x, psi, t, w, range) {
     Eg <- function(theta) mean(psi(theta) * w(t(x)))
-    range <- range + 0.25 * diff(range)
+    range <- range + c(-0.25, 0.25) * diff(range)
     uniroot(Eg, range)$root
 }
