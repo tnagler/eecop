@@ -1,0 +1,19 @@
+Package: eecop
+Title: Copula based estimation equations
+Version: 0.0.0.9000
+Authors@R: 
+    c(
+     person("Thomas", "Nagler",, "info@vinecopulib.org", role = c("aut", "cre")),
+     person("Thibault", "Vatter",, "info@vinecopulib.org", role = c("aut"))
+    )
+Description: Solves regression problems by using copula based estimating equations.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.1.1
+Imports: 
+    rvinecopulib,
+    ks,
+    copula,
+    assertthat
