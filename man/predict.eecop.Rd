@@ -4,7 +4,7 @@
 \alias{predict.eecop}
 \title{Title}
 \usage{
-\method{predict}{eecop}(object, x, type = "exp", t = 0.5, ...)
+\method{predict}{eecop}(object, x, type = "expectile", t = 0.5, ...)
 }
 \arguments{
 \item{...}{}
