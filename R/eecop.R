@@ -123,7 +123,7 @@ predict.eecop <- function(object, x, type = "exp", t = 0.5, ...) {
 }
 
 predict_one <- function(x, psi, t, w, range) {
-    Eg <- function(theta) mean(psi(theta) * w(t(x)))
+    Eg <- function(theta) mean(psi(theta, t) * w(t(x)))
     range <- range + c(-0.25, 0.25) * diff(range)
     uniroot(Eg, range)$root
 }
