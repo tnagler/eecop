@@ -35,7 +35,7 @@ fit_copula_kde <- function(u, weights) {
       Sigmas = bws,
       props = weights / sum(weights)
     )
-    f / apply(dnorm(x_new), 1, prod)
+    f / max(1e-20, apply(dnorm(x_new), 1, prod))
   }
 }
 
