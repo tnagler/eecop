@@ -49,6 +49,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   weights <- weights / mean(weights)
   w <- function(x) {
     u <- sapply(seq_len(p), function(j) margins_X[[j]](x[j]))
+    u <- pmin(pmax(u, 1e-10), 1 - 1e-10)
     Vu <- cbind(V, matrix(rep(u, each = n), n, p))
     c_YX(Vu) / c_Y(V) * weights
   }
