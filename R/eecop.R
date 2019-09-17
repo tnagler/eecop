@@ -49,6 +49,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   weights <- weights / mean(weights)
   w <- function(x) {
     u <- sapply(seq_len(p), function(j) margins_X[[j]](x[j]))
+    u <- pmin(pmax(u, 1e-10), 1 - 1e-10)
     Vu <- cbind(V, matrix(rep(u, each = n), n, p))
     c_YX(Vu) / c_Y(V) * weights
   }
@@ -133,6 +134,7 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
 
 predict_one_x <- function(x, psi, t, w, range, tol) {
   w_x <- w(t(x))
+  print(x)
   range <- range + c(-0.25, 0.25) * diff(range)
   lapply(t, predict_one_t, psi = psi, w_x = w_x, range = range, tol = tol)
 }
