@@ -134,7 +134,6 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
 
 predict_one_x <- function(x, psi, t, w, range, tol) {
   w_x <- w(t(x))
-  print(x)
   range <- range + c(-0.25, 0.25) * diff(range)
   lapply(t, predict_one_t, psi = psi, w_x = w_x, range = range, tol = tol)
 }
