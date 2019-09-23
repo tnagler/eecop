@@ -20,7 +20,7 @@ fit_copula_vine <- function(u, weights, ...) {
 #' @noRd
 fit_copula_kde <- function(u, weights) {
   x <- qnorm(u)
-  bw <- nrow(x)^(-2 / (ncol(x) + 2)) * cov(x)
+  bw <- nrow(x)^(-2 / (ncol(x) + 3)) * cov(x)
   function(u_new) {
     x_new <- qnorm(u_new)
     n <- nrow(x)
