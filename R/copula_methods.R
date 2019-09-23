@@ -18,9 +18,9 @@ fit_copula_vine <- function(u, weights, ...) {
 
 #' @importFrom stats qnorm dnorm
 #' @noRd
-fit_copula_kde <- function(u, weights) {
+fit_copula_kde <- function(u, weights, mult = 1) {
   x <- qnorm(u)
-  bw <- nrow(x)^(-2 / (ncol(x) + 2)) * cov(x)
+  bw <- mult * nrow(x)^(-2 / (ncol(x) + 3)) * cov(x)
   function(u_new) {
     x_new <- qnorm(u_new)
     n <- nrow(x)

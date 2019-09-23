@@ -86,7 +86,7 @@ fit_copula <- function(u, method, weights, ...) {
   switch(method,
     "vine" = fit_copula_vine(u, weights, ...),
     "normal" = fit_copula_normal(u, weights),
-    "kde" = fit_copula_kde(u, weights),
+    "kde" = fit_copula_kde(u, weights, ...),
     "bernstein" = fit_copula_bernstein(u, weights)
   )
 }
