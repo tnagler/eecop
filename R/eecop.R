@@ -38,8 +38,8 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     function(j) fit_margin(x[, j], margin_method, weights)
   )
 
-  V <- sapply(seq_len(q), function(j) margins_Y[[j]](y[, j]))
-  U <- sapply(seq_len(p), function(j) margins_X[[j]](x[, j]))
+  V <- sapply(seq_len(q), function(j) cut_01(margins_Y[[j]](y[, j])))
+  U <- sapply(seq_len(p), function(j) cut_01(margins_X[[j]](x[, j])))
   c_YX <- fit_copula(cbind(V, U), copula_method, weights, ...)
   c_Y <- fit_copula(V, copula_method, weights, ...)
 
@@ -48,8 +48,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   }
   weights <- weights / mean(weights)
   w <- function(x) {
-    u <- sapply(seq_len(p), function(j) margins_X[[j]](x[j]))
-    u <- pmin(pmax(u, 1e-10), 1 - 1e-10)
+    u <- sapply(seq_len(p), function(j) cut_01(margins_X[[j]](x[j])))
     Vu <- cbind(V, matrix(rep(u, each = n), n, p))
     c_YX(Vu) / c_Y(V) * weights
   }
@@ -67,6 +66,10 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     ),
     class = "eecop"
   )
+}
+
+cut_01 <- function(x, gap = 1e-10) {
+  pmin(pmax(x, gap), 1 - gap)
 }
 
 fit_margin <- function(x, method, weights) {
