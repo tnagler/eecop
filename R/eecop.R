@@ -137,11 +137,15 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
 
 predict_one_x <- function(x, psi, t, w, range, tol) {
   w_x <- w(t(x))
+  w_sel <- which(!is.nan(w_x))
   range <- range + c(-0.25, 0.25) * diff(range)
-  lapply(t, predict_one_t, psi = psi, w_x = w_x, range = range, tol = tol)
+  lapply(t, predict_one_t,
+    psi = psi, w_x = w_x[w_sel],
+    w_sel = w_sel, range = range, tol = tol
+  )
 }
 
-predict_one_t <- function(t, psi, w_x, range, tol) {
-  Eg <- function(theta) mean(psi(theta, t) * w_x)
+predict_one_t <- function(t, psi, w_x, w_sel, range, tol) {
+  Eg <- function(theta) mean(psi(theta, t)[w_sel] * w_x)
   root_solve(Eg, range, tol)
 }
