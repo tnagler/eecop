@@ -3,8 +3,8 @@ root_solve <- function(f, range, tol) {
 
   if (any(class(root) == "error")) {
     x0 <- mean(range)
-    x1 <- mean(range) + (max(range) - mean(range)) / 100
-    root <- root_solve_secant(f, x0, tol)
+    x1 <- mean(range) + (max(range) - mean(range)) / 20
+    root <- root_solve_secant(f, x0, x1, tol)
   }
   return(root)
 }
@@ -21,7 +21,8 @@ root_solve_secant <- function(fun, x0, x1,
     x0 <- x1
     x1 <- x2
   }
-  stop("max number of iterations reached")
+  warning("max number of iterations reached")
+  return(x2)
 }
 
 get_psi_expectile <- function(y) {
