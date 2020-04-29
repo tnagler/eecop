@@ -18,7 +18,7 @@ fit_copula_vine <- function(u, weights, ...) {
 
 #' @importFrom stats qnorm dnorm
 #' @noRd
-fit_copula_kde <- function(u, weights, mult = 1) {
+fit_copula_kde <- function(u, weights, mult = 1, ...) {
   x <- qnorm(u)
   bw <- mult * nrow(x)^(-2 / (ncol(x) + 3)) * cov(x)
   function(u_new) {
@@ -40,13 +40,13 @@ fit_copula_kde <- function(u, weights, mult = 1) {
 }
 
 #' @noRd
-fit_copula_bernstein <- function(u, weights) {
+fit_copula_bernstein <- function(u, weights, ...) {
   m <- ceiling(nrow(u)^(2 / (4 + ncol(u))))
   fit <- fit_bern_coefs(u, m)
   function(u_new) eval_bern(u_new, fit)
 }
 
-fit_bern_coefs <- function(u, m, weights = numeric(0)) {
+fit_bern_coefs <- function(u, m, weights = numeric(0), ...) {
   if (!length(weights)) {
     weights <- rep(1, NROW(u))
   }

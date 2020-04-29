@@ -14,8 +14,8 @@
 #' @examples
 eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
                   weights = numeric(), ...) {
-  y <- as.matrix(y)
-  x <- as.matrix(x)
+  y <- as.data.frame(y)
+  x <- as.data.frame(x)
   assert_that(
     nrow(y) == nrow(x),
     is.string(copula_method),
@@ -25,9 +25,23 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     is.numeric(weights)
   )
 
-  n <- nrow(y)
+  if (any(sapply(y, function(v) is.factor(v) & !is.ordered(v))))
+    stop("factor-valued response not allowed.")
+  x <- rvinecopulib:::expand_factors(x)
+
   q <- ncol(y)
   p <- ncol(x)
+  n <- nrow(x)
+
+  var_types_Y <- ifelse(sapply(y, is.ordered), "d", "c")
+  var_types_X <- ifelse(sapply(x, is.ordered), "d", "c")
+
+  if ("d" %in% c(var_types_X, var_types_Y)) {
+    if (margin_method == "normal")
+      stop("normal margins can't be used with discrete data.")
+    if (copula_method != "vine")
+      stop('only copula_method = "vine" allowed with discrete data.')
+  }
 
   margins_Y <- lapply(
     seq_len(q),
@@ -38,18 +52,24 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     function(j) fit_margin(x[, j], margin_method, weights)
   )
 
-  V <- sapply(seq_len(q), function(j) cut_01(margins_Y[[j]](y[, j])))
-  U <- sapply(seq_len(p), function(j) cut_01(margins_X[[j]](x[, j])))
-  c_YX <- fit_copula(cbind(V, U), copula_method, weights, ...)
-  c_Y <- fit_copula(V, copula_method, weights, ...)
+  V <- compute_pseudo_obs(y, margins_Y)
+  U <- compute_pseudo_obs(x, margins_X)
+  c_YX <- fit_copula(combine_margins(V, U, q, p),
+                     copula_method, weights,
+                     var_types = c(var_types_Y, var_types_X),
+                     ...)
+  c_Y <- fit_copula(V, copula_method, weights,
+                    var_types = var_types_Y,
+                    ...)
 
   if (length(weights) == 0) {
     weights <- rep(1, n)
   }
   weights <- weights / mean(weights)
   w <- function(x) {
-    u <- sapply(seq_len(p), function(j) cut_01(margins_X[[j]](x[j])))
-    Vu <- cbind(V, matrix(rep(u, each = n), n, p))
+    u <- compute_pseudo_obs(x, margins_X)
+    u <- matrix(rep(u, each = n), n, ncol(u))
+    Vu <- combine_margins(V, u, q, p)
     c_YX(Vu) / c_Y(V) * weights
   }
   structure(
@@ -57,6 +77,8 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
       copula_method = copula_method,
       margin_method = margin_method,
       dots = list(...),
+      var_types_Y = var_types_Y,
+      var_types_X = var_types_X,
       y = y,
       weights = weights,
       n = n,
@@ -68,14 +90,10 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   )
 }
 
-cut_01 <- function(x, gap = 1e-10) {
-  pmin(pmax(x, gap), 1 - gap)
-}
-
 fit_margin <- function(x, method, weights) {
   switch(method,
-    "normal" = fit_margin_normal(x, weights),
-    "kde" = fit_margin_kde(x, weights)
+         "normal" = fit_margin_normal(x, weights),
+         "kde" = fit_margin_kde(x, weights)
   )
 }
 
@@ -84,17 +102,17 @@ fit_copula <- function(u, method, weights, ...) {
     return(function(u) rep(1, NROW(u)))
   }
   switch(method,
-    "vine" = fit_copula_vine(u, weights, ...),
-    "normal" = fit_copula_normal(u, weights),
-    "kde" = fit_copula_kde(u, weights, ...),
-    "bernstein" = fit_copula_bernstein(u, weights)
+         "vine" = fit_copula_vine(u, weights, ...),
+         "normal" = fit_copula_normal(u, weights),
+         "kde" = fit_copula_kde(u, weights, ...),
+         "bernstein" = fit_copula_bernstein(u, weights)
   )
 }
 
 get_psi <- function(type, y) {
   switch(type,
-    "expectile" = get_psi_expectile(y),
-    "quantile" = get_psi_quantile(y)
+         "expectile" = get_psi_expectile(y),
+         "quantile" = get_psi_quantile(y)
   )
 }
 
@@ -116,16 +134,17 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   if ((NCOL(x) == 1) & (NROW(x) == object$p)) {
     x <- t(x)
   }
-  x <- as.matrix(x)
+  x <- as.data.frame(x)
   assert_that(
     ncol(x) == object$p,
     (is.string(type) & (type %in% c("expectile", "quantile"))) | is.function(type),
     is.numeric(t)
   )
 
-  tol <- sd(object$y) / NROW(object$y)
-  out <- apply(
-    x, 1, predict_one_x,
+  tol <- max(apply(object$y, 2, sd)) / NROW(object$y)
+  out <- sapply(
+    seq_len(nrow(x)),
+    function(i, ...) predict_one_x(x[i, , drop = FALSE], ...),
     psi = get_psi(type, object$y),
     t = t,
     w = object$w,
@@ -136,12 +155,12 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
 }
 
 predict_one_x <- function(x, psi, t, w, range, tol) {
-  w_x <- w(t(x))
+  w_x <- w(x)
   w_sel <- which(!is.nan(w_x))
   range <- range + c(-0.25, 0.25) * diff(range)
   lapply(t, predict_one_t,
-    psi = psi, w_x = w_x[w_sel],
-    w_sel = w_sel, range = range, tol = tol
+         psi = psi, w_x = w_x[w_sel],
+         w_sel = w_sel, range = range, tol = tol
   )
 }
 
