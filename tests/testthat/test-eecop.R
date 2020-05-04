@@ -1,5 +1,7 @@
-n <- 20
-d <- 5
+set.seed(5)
+
+n <- 50
+d <- 3
 
 x <- matrix(rnorm(n * d), n, d)
 y <- rowSums(x) + rnorm(n)
