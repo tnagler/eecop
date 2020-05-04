@@ -14,8 +14,7 @@ eecop(
 )
 }
 \arguments{
-\item{y}{vector, matrix, or data.frame with response values (rows are
-observations).}
+\item{y}{vector with numeric response values.}
 
 \item{x}{vector, matrix, or data.frame with covariate values (rows are
 observations).}

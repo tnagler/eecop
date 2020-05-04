@@ -5,8 +5,7 @@
 #' is estimated. Predictions for quantiles or expectiles can then be derived
 #' from solving a weighted estimating equations.
 #'
-#' @param y vector, matrix, or data.frame with response values (rows are
-#'   observations).
+#' @param y vector with numeric response values.
 #' @param x vector, matrix, or data.frame with covariate values (rows are
 #'   observations).
 #' @param copula_method method for estimating the copula(s); one of `vine",
@@ -55,6 +54,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   x <- as.data.frame(x)
   assert_that(
     nrow(y) == nrow(x),
+    ncol(y) == 1,
     is.string(copula_method),
     is.string(margin_method),
     copula_method %in% c("vine", "normal", "kde"),
@@ -62,7 +62,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     is.numeric(weights)
   )
 
-  if (any(sapply(y, function(v) is.factor(v) & !is.ordered(v))))
+  if (any(sapply(y, is.factor)))
     stop("factor-valued response not allowed.")
   x <- rvinecopulib:::expand_factors(x)
 
@@ -70,10 +70,9 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   p <- ncol(x)
   n <- nrow(x)
 
-  var_types_Y <- ifelse(sapply(y, is.ordered), "d", "c")
-  var_types_X <- ifelse(sapply(x, is.ordered), "d", "c")
+  var_types <- ifelse(sapply(x, is.ordered), "d", "c")
 
-  if ("d" %in% c(var_types_X, var_types_Y)) {
+  if ("d" %in% var_types) {
     if (margin_method == "normal")
       stop("normal margins can't be used with discrete data.")
     if (copula_method != "vine")
@@ -93,12 +92,11 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   U <- compute_pseudo_obs(x, margins_X)
 
   c_YX <- fit_copula(combine_margins(V, U, q, p),
-                     copula_method, weights,
-                     var_types = c(var_types_Y, var_types_X),
+                     method = copula_method,
+                     weights = weights,
+                     var_types = c("c", var_types),
                      ...)
-  c_Y <- fit_copula(V, copula_method, weights,
-                    var_types = var_types_Y,
-                    ...)
+  c_Y <- fit_copula(V, copula_method, weights, var_types = "c", ...)
 
   if (length(weights) == 0) {
     weights <- rep(1, n)
@@ -115,8 +113,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
       copula_method = copula_method,
       margin_method = margin_method,
       dots = list(...),
-      var_types_Y = var_types_Y,
-      var_types_X = var_types_X,
+      var_types = var_types,
       y = y,
       weights = weights,
       n = n,
@@ -194,6 +191,7 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   )
 
   tol <- max(apply(object$y, 2, sd)) / NROW(object$y)
+
   out <- sapply(
     seq_len(nrow(x)),
     function(i, ...) predict_one_x(x[i, , drop = FALSE], ...),
