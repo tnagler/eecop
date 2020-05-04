@@ -16,6 +16,8 @@ Imports:
     rvinecopulib,
     ks,
     copula,
-    assertthat
+    assertthat,
+    kde1d,
+    wdm
 URL: https://github.com/tnagler/eecop
 BugReports: https://github.com/tnagler/eecop/issues

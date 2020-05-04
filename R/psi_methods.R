@@ -1,3 +1,5 @@
+#' @noRd
+#' @importFrom stats uniroot
 root_solve <- function(f, range, tol) {
   root <- tryCatch(uniroot(f, range, tol = tol)$root, error = function(e) e)
 

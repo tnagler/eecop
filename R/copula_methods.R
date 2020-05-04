@@ -18,7 +18,7 @@ fit_copula_vine <- function(u, weights, mult = 1, ...) {
   function(u_new) rvinecopulib::dvinecop(u_new, cop_model)
 }
 
-#' @importFrom stats qnorm dnorm
+#' @importFrom stats qnorm dnorm cov
 #' @noRd
 fit_copula_kde <- function(u, weights, mult = 1, q = 1, ...) {
   x <- qnorm(u)
