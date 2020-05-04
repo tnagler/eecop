@@ -91,6 +91,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
 
   V <- compute_pseudo_obs(y, margins_Y)
   U <- compute_pseudo_obs(x, margins_X)
+
   c_YX <- fit_copula(combine_margins(V, U, q, p),
                      copula_method, weights,
                      var_types = c(var_types_Y, var_types_X),
@@ -134,8 +135,8 @@ fit_margin <- function(x, method, weights) {
   )
 }
 
-fit_copula <- function(u, method, weights, ...) {
-  if (NCOL(u) == 1) {
+fit_copula <- function(u, method, weights, var_types, ...) {
+  if (length(var_types) == 1) {
     return(function(u) rep(1, NROW(u)))
   }
   switch(method,
