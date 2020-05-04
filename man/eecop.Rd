@@ -52,8 +52,9 @@ predict(fit, x, t = c(0.5, 0.9), type = "expectile")
 # model with discrete covariates
 x <- as.data.frame(matrix(rbinom(200, 5, 0.3), 100, 2))
 y <- rowSums(x) + rnorm(100)
-for (k in 1:2)
- x[, k] <- ordered(x[, k], levels = 0:5)
+for (k in 1:2) {
+  x[, k] <- ordered(x[, k], levels = 0:5)
+}
 
 fit <- eecop(y, x)
 

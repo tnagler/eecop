@@ -33,7 +33,6 @@ y <- rowSums(x) + rnorm(100)
 fit <- eecop(y, x)
 predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 predict(fit, x, t = c(0.5, 0.9), type = "expectile")
-
 }
 \references{
 Nagler, T. and Vatter, T. (2020). Solving estimating equations with copulas.

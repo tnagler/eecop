@@ -1,6 +1,7 @@
 compute_pseudo_obs <- function(x, margins) {
-  if (is.numeric(x) && all(dim(x) == c(length(margins), 1)))
+  if (is.numeric(x) && all(dim(x) == c(length(margins), 1))) {
     x <- t(x)
+  }
   d <- NCOL(x)
   u <- lapply(seq_len(d), function(k) margins[[k]](x[, k]))
   u <- do.call(cbind, u)
@@ -28,4 +29,3 @@ cut_01 <- function(x, gap = 1e-10) {
 combine_margins <- function(V, U, q, p) {
   cbind(V[, seq_len(q)], U[, seq_len(p)], V[, -seq_len(q)], U[, -seq_len(p)])
 }
-

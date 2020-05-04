@@ -41,8 +41,9 @@
 #' # model with discrete covariates
 #' x <- as.data.frame(matrix(rbinom(200, 5, 0.3), 100, 2))
 #' y <- rowSums(x) + rnorm(100)
-#' for (k in 1:2)
-#'  x[, k] <- ordered(x[, k], levels = 0:5)
+#' for (k in 1:2) {
+#'   x[, k] <- ordered(x[, k], levels = 0:5)
+#' }
 #'
 #' fit <- eecop(y, x)
 #'
@@ -62,8 +63,9 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     is.numeric(weights)
   )
 
-  if (any(sapply(y, is.factor)))
+  if (any(sapply(y, is.factor))) {
     stop("factor-valued response not allowed.")
+  }
   x <- rvinecopulib:::expand_factors(x)
 
   q <- ncol(y)
@@ -73,10 +75,12 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   var_types <- ifelse(sapply(x, is.ordered), "d", "c")
 
   if ("d" %in% var_types) {
-    if (margin_method == "normal")
+    if (margin_method == "normal") {
       stop("normal margins can't be used with discrete data.")
-    if (copula_method != "vine")
+    }
+    if (copula_method != "vine") {
       stop('only copula_method = "vine" allowed with discrete data.')
+    }
   }
 
   margins_Y <- lapply(
@@ -92,10 +96,11 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   U <- compute_pseudo_obs(x, margins_X)
 
   c_YX <- fit_copula(combine_margins(V, U, q, p),
-                     method = copula_method,
-                     weights = weights,
-                     var_types = c("c", var_types),
-                     ...)
+    method = copula_method,
+    weights = weights,
+    var_types = c("c", var_types),
+    ...
+  )
   c_Y <- fit_copula(V, copula_method, weights, var_types = "c", ...)
 
   if (length(weights) == 0) {
@@ -127,8 +132,8 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
 
 fit_margin <- function(x, method, weights) {
   switch(method,
-         "normal" = fit_margin_normal(x, weights),
-         "kde" = fit_margin_kde(x, weights)
+    "normal" = fit_margin_normal(x, weights),
+    "kde" = fit_margin_kde(x, weights)
   )
 }
 
@@ -137,15 +142,17 @@ fit_copula <- function(u, method, weights, var_types, ...) {
     return(function(u) rep(1, NROW(u)))
   }
   switch(method,
-         "vine" = fit_copula_vine(u, weights, ...),
-         "normal" = fit_copula_normal(u, weights),
-         "kde" = fit_copula_kde(u, weights, ...))
+    "vine" = fit_copula_vine(u, weights, ...),
+    "normal" = fit_copula_normal(u, weights),
+    "kde" = fit_copula_kde(u, weights, ...)
+  )
 }
 
 get_psi <- function(type, y) {
   switch(type,
-         "expectile" = get_psi_expectile(y),
-         "quantile" = get_psi_quantile(y))
+    "expectile" = get_psi_expectile(y),
+    "quantile" = get_psi_quantile(y)
+  )
 }
 
 #' Prediction of quantiles or expectiles
@@ -176,7 +183,6 @@ get_psi <- function(type, y) {
 #' fit <- eecop(y, x)
 #' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 #' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
-#'
 #' @importFrom assertthat is.scalar is.string
 predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   if ((NCOL(x) == 1) & (NROW(x) == object$p)) {
@@ -209,8 +215,8 @@ predict_one_x <- function(x, psi, t, w, range, tol) {
   w_sel <- which(!is.nan(w_x))
   range <- range + c(-0.25, 0.25) * diff(range)
   lapply(t, predict_one_t,
-         psi = psi, w_x = w_x[w_sel],
-         w_sel = w_sel, range = range, tol = tol
+    psi = psi, w_x = w_x[w_sel],
+    w_sel = w_sel, range = range, tol = tol
   )
 }
 
