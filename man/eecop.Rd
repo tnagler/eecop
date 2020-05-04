@@ -4,8 +4,14 @@
 \alias{eecop}
 \title{Title}
 \usage{
-eecop(y, x, copula_method = "vine", margin_method = "kde",
-  weights = numeric(), ...)
+eecop(
+  y,
+  x,
+  copula_method = "vine",
+  margin_method = "kde",
+  weights = numeric(),
+  ...
+)
 }
 \arguments{
 \item{...}{}

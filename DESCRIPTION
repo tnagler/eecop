@@ -11,11 +11,12 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 Imports: 
     rvinecopulib,
     ks,
     copula,
-    assertthat
+    assertthat,
+    purrr
 URL: https://github.com/tnagler/eecop
 BugReports: https://github.com/tnagler/eecop/issues
