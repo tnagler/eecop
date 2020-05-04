@@ -2,16 +2,32 @@
 % Please edit documentation in R/eecop.R
 \name{predict.eecop}
 \alias{predict.eecop}
-\title{Title}
+\title{Prediction of quantiles or expectiles}
 \usage{
 \method{predict}{eecop}(object, x, type = "expectile", t = 0.5, ...)
 }
 \arguments{
-\item{...}{}
+\item{object}{an \code{eecop} object.}
+
+\item{x}{covariate values to predict on.}
+
+\item{type}{either \code{"quantile"} or \code{"expectile"}.}
+
+\item{t}{the quantile/expectile level.}
+
+\item{...}{unused.}
+}
+\value{
+A matrix of predictions, each column corresponds to one \code{t}.
 }
 \description{
-Title
+Prediction of quantiles or expectiles
 }
 \examples{
+x <- matrix(rnorm(200), 100, 2)
+y <- rowSums(xx) + rnorm(100)
+
+fit <- eecop(y, x)
+predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 
 }

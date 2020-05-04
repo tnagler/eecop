@@ -1,17 +1,27 @@
-#' Title
+#' Copula regression models bases on estimating equations
 #'
-#' @param y
-#' @param x
-#' @param copula_method
-#' @param margin_method
-#' @param weights
-#' @param ...
+#' @param y vector, matrix, or data.frame with response values (rows are
+#'   observations).
+#' @param x vector, matrix, or data.frame with covariate values (rows are
+#'   observations).
+#' @param copula_method method for estimating the copula(s); one of `vine",
+#'   "normal", "kde"` for vine copula, Gaussian copula, and transformation
+#'   kernel density method, respectively.
+#' @param margin_method method for estimating marginal distributions; one of
+#' `"kde", "normal"` for kernel density or Gaussian margins, respectively.
+#' @param weights optional; a vector of weights for each observation.
+#' @param ... further arguments passed to `rvinecopulib::vinecop()`.
 #'
 #' @export
 #'
 #' @importFrom assertthat assert_that is.string
 #'
 #' @examples
+#' x <- matrix(rnorm(200), 100, 2)
+#' y <- rowSums(xx) + rnorm(100)
+#'
+#' fit <- eecop(y, x)
+#' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
                   weights = numeric(), ...) {
   y <- as.data.frame(y)
@@ -20,7 +30,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     nrow(y) == nrow(x),
     is.string(copula_method),
     is.string(margin_method),
-    copula_method %in% c("vine", "normal", "kde", "bernstein"),
+    copula_method %in% c("vine", "normal", "kde"),
     margin_method %in% c("kde", "normal"),
     is.numeric(weights)
   )
@@ -112,22 +122,27 @@ fit_copula <- function(u, method, weights, ...) {
 get_psi <- function(type, y) {
   switch(type,
          "expectile" = get_psi_expectile(y),
-         "quantile" = get_psi_quantile(y)
-  )
+         "quantile" = get_psi_quantile(y))
 }
 
-#' Title
+#' Prediction of quantiles or expectiles
 #'
-#' @param object
-#' @param x
-#' @param type
-#' @param t
-#' @param ...
+#' @param object an `eecop` object.
+#' @param x covariate values to predict on.
+#' @param type either `"quantile"` or `"expectile"`.
+#' @param t the quantile/expectile level.
+#' @param ... unused.
 #'
 #' @return
+#' A matrix of predictions, each column corresponds to one `t`.
 #' @export
 #'
 #' @examples
+#' x <- matrix(rnorm(200), 100, 2)
+#' y <- rowSums(xx) + rnorm(100)
+#'
+#' fit <- eecop(y, x)
+#' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 #'
 #' @importFrom assertthat is.scalar is.string
 predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
@@ -137,7 +152,8 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   x <- as.data.frame(x)
   assert_that(
     ncol(x) == object$p,
-    (is.string(type) & (type %in% c("expectile", "quantile"))) | is.function(type),
+    is.string(type),
+    type %in% c("expectile", "quantile"),
     is.numeric(t)
   )
 

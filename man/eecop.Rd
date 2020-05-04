@@ -2,14 +2,41 @@
 % Please edit documentation in R/eecop.R
 \name{eecop}
 \alias{eecop}
-\title{Title}
+\title{Copula regression models bases on estimating equations}
 \usage{
-eecop(y, x, copula_method = "vine", margin_method = "kde",
-  weights = numeric(), ...)
+eecop(
+  y,
+  x,
+  copula_method = "vine",
+  margin_method = "kde",
+  weights = numeric(),
+  ...
+)
 }
 \arguments{
-\item{...}{}
+\item{y}{vector, matrix, or data.frame with response values (rows are
+observations).}
+
+\item{x}{vector, matrix, or data.frame with covariate values (rows are
+observations).}
+
+\item{copula_method}{method for estimating the copula(s); one of \verb{vine", "normal", "kde"} for vine copula, Gaussian copula, and transformation
+kernel density method, respectively.}
+
+\item{margin_method}{method for estimating marginal distributions; one of
+\verb{"kde", "normal"} for kernel density or Gaussian margins, respectively.}
+
+\item{weights}{optional; a vector of weights for each observation.}
+
+\item{...}{further arguments passed to \code{rvinecopulib::vinecop()}.}
 }
 \description{
-Title
+Copula regression models bases on estimating equations
+}
+\examples{
+x <- matrix(rnorm(200), 100, 2)
+y <- rowSums(xx) + rnorm(100)
+
+fit <- eecop(y, x)
+predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 }

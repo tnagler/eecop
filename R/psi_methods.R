@@ -26,11 +26,15 @@ root_solve_secant <- function(fun, x0, x1,
 }
 
 get_psi_expectile <- function(y) {
+  if (is.list(y))
+    y <- y[[1]]
   function(theta, t = 0.5)
     t * (y - theta) * (y >= theta) - (1 - t) * (theta - y) * (y < theta)
 }
 
 get_psi_quantile <- function(y) {
+  if (is.list(y))
+    y <- y[[1]]
   function(theta, t = 0.5)
     t * (y >= theta) - (1 - t) * (y < theta)
 }
