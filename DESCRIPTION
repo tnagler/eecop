@@ -21,3 +21,5 @@ Imports:
     wdm
 URL: https://github.com/tnagler/eecop
 BugReports: https://github.com/tnagler/eecop/issues
+Suggests: 
+    testthat
