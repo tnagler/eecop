@@ -2,7 +2,7 @@
 % Please edit documentation in R/eecop.R
 \name{eecop}
 \alias{eecop}
-\title{Copula regression models bases on estimating equations}
+\title{Copula regression models based on estimating equations}
 \usage{
 eecop(
   y,
@@ -31,12 +31,37 @@ kernel density method, respectively.}
 \item{...}{further arguments passed to \code{rvinecopulib::vinecop()}.}
 }
 \description{
-Copula regression models bases on estimating equations
+Implements the copula regression estimators of Nagler and Vatter (2020). A
+model for marginal distributions and copula between response and covariates
+is estimated. Predictions for quantiles or expectiles can then be derived
+from solving a weighted estimating equations.
+}
+\details{
+Both \code{y} and \code{x} may contain discrete variables, which must be passed as
+\code{ordered()} or \code{factor()} variables.
 }
 \examples{
+# model with continuous variables
 x <- matrix(rnorm(200), 100, 2)
-y <- rowSums(xx) + rnorm(100)
+y <- rowSums(x) + rnorm(100)
 
 fit <- eecop(y, x)
+
 predict(fit, x, t = c(0.5, 0.9), type = "quantile")
+predict(fit, x, t = c(0.5, 0.9), type = "expectile")
+
+# model with discrete covariates
+x <- as.data.frame(matrix(rbinom(200, 5, 0.3), 100, 2))
+y <- rowSums(x) + rnorm(100)
+for (k in 1:2)
+ x[, k] <- ordered(x[, k], levels = 0:5)
+
+fit <- eecop(y, x)
+
+predict(fit, x, t = c(0.5, 0.9), type = "quantile")
+predict(fit, x, t = c(0.5, 0.9), type = "expectile")
+}
+\references{
+Nagler, T. and Vatter, T. (2020). Solving estimating equations with copulas.
+arXiv:1801.10576
 }

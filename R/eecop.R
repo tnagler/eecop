@@ -1,4 +1,9 @@
-#' Copula regression models bases on estimating equations
+#' Copula regression models based on estimating equations
+#'
+#' Implements the copula regression estimators of Nagler and Vatter (2020). A
+#' model for marginal distributions and copula between response and covariates
+#' is estimated. Predictions for quantiles or expectiles can then be derived
+#' from solving a weighted estimating equations.
 #'
 #' @param y vector, matrix, or data.frame with response values (rows are
 #'   observations).
@@ -12,16 +17,38 @@
 #' @param weights optional; a vector of weights for each observation.
 #' @param ... further arguments passed to `rvinecopulib::vinecop()`.
 #'
+#' @details
+#' Both `y` and `x` may contain discrete variables, which must be passed as
+#' `ordered()` or `factor()` variables.
+#'
 #' @export
 #'
 #' @importFrom assertthat assert_that is.string
 #'
+#' @references
+#' Nagler, T. and Vatter, T. (2020). Solving estimating equations with copulas.
+#' arXiv:1801.10576
+#'
 #' @examples
+#' # model with continuous variables
 #' x <- matrix(rnorm(200), 100, 2)
-#' y <- rowSums(xx) + rnorm(100)
+#' y <- rowSums(x) + rnorm(100)
 #'
 #' fit <- eecop(y, x)
+#'
 #' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
+#' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
+#'
+#' # model with discrete covariates
+#' x <- as.data.frame(matrix(rbinom(200, 5, 0.3), 100, 2))
+#' y <- rowSums(x) + rnorm(100)
+#' for (k in 1:2)
+#'  x[, k] <- ordered(x[, k], levels = 0:5)
+#'
+#' fit <- eecop(y, x)
+#'
+#' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
+#' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
 eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
                   weights = numeric(), ...) {
   y <- as.data.frame(y)
@@ -127,22 +154,32 @@ get_psi <- function(type, y) {
 
 #' Prediction of quantiles or expectiles
 #'
+#' Predicts quantiles or expectiles from an `eecop()` model by solving
+#' a weighted estimating equations as in Nagler and Vatter (2020).
+#'
 #' @param object an `eecop` object.
-#' @param x covariate values to predict on.
+#' @param x covariate values to predict on; must match the format used for
+#' fitting the `eecop()` model.
 #' @param type either `"quantile"` or `"expectile"`.
-#' @param t the quantile/expectile level.
+#' @param t a vector of quantile/expectile levels.
 #' @param ... unused.
 #'
 #' @return
-#' A matrix of predictions, each column corresponds to one `t`.
+#' A matrix of predictions, each column corresponding to one `t` (in the order
+#' they were supplied to `predict()`.
 #' @export
+#'
+#' @references
+#' Nagler, T. and Vatter, T. (2020). Solving estimating equations with copulas.
+#' arXiv:1801.10576
 #'
 #' @examples
 #' x <- matrix(rnorm(200), 100, 2)
-#' y <- rowSums(xx) + rnorm(100)
+#' y <- rowSums(x) + rnorm(100)
 #'
 #' fit <- eecop(y, x)
 #' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
+#' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
 #'
 #' @importFrom assertthat is.scalar is.string
 predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {

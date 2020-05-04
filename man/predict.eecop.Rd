@@ -9,25 +9,33 @@
 \arguments{
 \item{object}{an \code{eecop} object.}
 
-\item{x}{covariate values to predict on.}
+\item{x}{covariate values to predict on; must match the format used for
+fitting the \code{eecop()} model.}
 
 \item{type}{either \code{"quantile"} or \code{"expectile"}.}
 
-\item{t}{the quantile/expectile level.}
+\item{t}{a vector of quantile/expectile levels.}
 
 \item{...}{unused.}
 }
 \value{
-A matrix of predictions, each column corresponds to one \code{t}.
+A matrix of predictions, each column corresponding to one \code{t} (in the order
+they were supplied to \code{predict()}.
 }
 \description{
-Prediction of quantiles or expectiles
+Predicts quantiles or expectiles from an \code{eecop()} model by solving
+a weighted estimating equations as in Nagler and Vatter (2020).
 }
 \examples{
 x <- matrix(rnorm(200), 100, 2)
-y <- rowSums(xx) + rnorm(100)
+y <- rowSums(x) + rnorm(100)
 
 fit <- eecop(y, x)
 predict(fit, x, t = c(0.5, 0.9), type = "quantile")
+predict(fit, x, t = c(0.5, 0.9), type = "expectile")
 
+}
+\references{
+Nagler, T. and Vatter, T. (2020). Solving estimating equations with copulas.
+arXiv:1801.10576
 }
