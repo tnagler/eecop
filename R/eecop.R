@@ -65,7 +65,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     is.numeric(weights)
   )
 
-  if (any(sapply(y, is.factor))) {
+  if (any(sapply(y, function(yy) is.factor(y) & !is.ordered(y)))) {
     stop("factor-valued response not allowed.")
   }
   x <- rvinecopulib:::expand_factors(x)
@@ -74,9 +74,10 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   p <- ncol(x)
   n <- nrow(x)
 
-  var_types <- ifelse(sapply(x, is.ordered), "d", "c")
+  var_types_Y <- ifelse(sapply(y, is.ordered), "d", "c")
+  var_types_X <- ifelse(sapply(x, is.ordered), "d", "c")
 
-  if ("d" %in% var_types) {
+  if ("d" %in% c(var_types_Y, var_types_X)) {
     if (margin_method == "normal") {
       stop("normal margins can't be used with discrete data.")
     }
@@ -100,10 +101,10 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   c_YX <- fit_copula(combine_margins(V, U, q, p),
     method = copula_method,
     weights = weights,
-    var_types = c("c", var_types),
+    var_types = c(var_types_Y, var_types_X),
     ...
   )
-  c_Y <- fit_copula(V, copula_method, weights, var_types = "c", ...)
+  c_Y <- fit_copula(V, copula_method, weights, var_types = var_types_Y, ...)
 
   if (length(weights) == 0) {
     weights <- rep(1, n)
@@ -120,7 +121,8 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
       copula_method = copula_method,
       margin_method = margin_method,
       dots = list(...),
-      var_types = var_types,
+      var_types_Y = var_types_Y,
+      var_types_X = var_types_X,
       y = y,
       weights = weights,
       n = n,
