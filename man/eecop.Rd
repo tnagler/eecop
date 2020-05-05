@@ -29,6 +29,11 @@ kernel density method, respectively.}
 
 \item{...}{further arguments passed to \code{rvinecopulib::vinecop()}.}
 }
+\value{
+An object of class \code{eecop}. Use \code{predict.eecop()} to predict
+quantiles or expectiles. For other estimating equations, the weights
+\eqn{w(x) = c_{YX}(Y, x)/ c_Y(Y)} can be computed from \code{object$w(x)}.
+}
 \description{
 Implements the copula regression estimators of Nagler and Vatter (2020). A
 model for marginal distributions and copula between response and covariates
@@ -36,8 +41,8 @@ is estimated. Predictions for quantiles or expectiles can then be derived
 from solving a weighted estimating equations.
 }
 \details{
-Both \code{y} and \code{x} may contain discrete variables, which must be passed as
-\code{ordered()} or \code{factor()} variables.
+Both \code{y} and \code{x} may contain discrete variables, which must be
+passed as \code{ordered()} or \code{factor()} variables.
 }
 \examples{
 # model with continuous variables
@@ -62,6 +67,9 @@ predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 predict(fit, x, t = c(0.5, 0.9), type = "expectile")
 }
 \references{
-Nagler, T. and Vatter, T. (2020). Solving estimating equations with copulas.
-arXiv:1801.10576
+Nagler, T. and Vatter, T. (2020). Solving estimating equations
+with copulas. arXiv:1801.10576
+}
+\seealso{
+\code{predict.eecop()}
 }

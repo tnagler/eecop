@@ -12,21 +12,24 @@
 #'   "normal", "kde"` for vine copula, Gaussian copula, and transformation
 #'   kernel density method, respectively.
 #' @param margin_method method for estimating marginal distributions; one of
-#' `"kde", "normal"` for kernel density or Gaussian margins, respectively.
+#'   `"kde", "normal"` for kernel density or Gaussian margins, respectively.
 #' @param weights optional; a vector of weights for each observation.
 #' @param ... further arguments passed to `rvinecopulib::vinecop()`.
 #'
-#' @details
-#' Both `y` and `x` may contain discrete variables, which must be passed as
-#' `ordered()` or `factor()` variables.
+#' @details Both `y` and `x` may contain discrete variables, which must be
+#' passed as `ordered()` or `factor()` variables.
 #'
+#' @return An object of class `eecop`. Use `predict.eecop()` to predict
+#'   quantiles or expectiles. For other estimating equations, the weights
+#'   \eqn{w(x) = c_{YX}(Y, x)/ c_Y(Y)} can be computed from `object$w(x)`.
+#'
+#' @seealso `predict.eecop()`
 #' @export
 #'
 #' @importFrom assertthat assert_that is.string
 #'
-#' @references
-#' Nagler, T. and Vatter, T. (2020). Solving estimating equations with copulas.
-#' arXiv:1801.10576
+#' @references Nagler, T. and Vatter, T. (2020). Solving estimating equations
+#' with copulas. arXiv:1801.10576
 #'
 #' @examples
 #' # model with continuous variables
@@ -55,7 +58,6 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   x <- as.data.frame(x)
   assert_that(
     nrow(y) == nrow(x),
-    ncol(y) == 1,
     is.string(copula_method),
     is.string(margin_method),
     copula_method %in% c("vine", "normal", "kde"),
@@ -185,6 +187,8 @@ get_psi <- function(type, y) {
 #' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
 #' @importFrom assertthat is.scalar is.string
 predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
+  if (object$q > 1)
+    stop("can't predict quantiles/expectiles for multivariate response.")
   if ((NCOL(x) == 1) & (NROW(x) == object$p)) {
     x <- t(x)
   }
