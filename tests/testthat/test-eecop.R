@@ -27,7 +27,7 @@ test_that("discrete fitting works", {
   expect_silent(eecop(y, xx, weights = w))
   expect_error(eecop(y, xx, margin_method = "kde", copula_method = "kde"))
   y <- as.ordered(y)
-  expect_error(eecop(y, xx))
+  expect_silent(eecop(y, xx))
 })
 
 

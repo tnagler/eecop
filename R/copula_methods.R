@@ -13,6 +13,7 @@ fit_copula_normal <- function(u, weights) {
 #' @noRd
 fit_copula_vine <- function(u, weights, mult = 1, ...) {
   n <- NROW(u)
+  mult <- mult * n^(1 / 5 - 1 / 4.5)
   cop_model <- rvinecopulib::vinecop(u, weights = weights, mult = mult, ...)
   function(u_new) rvinecopulib::dvinecop(u_new, cop_model)
 }

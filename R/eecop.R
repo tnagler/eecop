@@ -189,8 +189,6 @@ get_psi <- function(type, y) {
 #' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
 #' @importFrom assertthat is.scalar is.string
 predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
-  if (object$q > 1)
-    stop("can't predict quantiles/expectiles for multivariate response.")
   if ((NCOL(x) == 1) & (NROW(x) == object$p)) {
     x <- t(x)
   }
@@ -201,6 +199,9 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
     type %in% c("expectile", "quantile"),
     is.numeric(t)
   )
+
+  if (object$q > 1)
+    stop("can't predict quantiles/expectiles for multivariate response.")
 
   tol <- max(apply(object$y, 2, sd)) / NROW(object$y)
 

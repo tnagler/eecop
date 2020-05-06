@@ -14,6 +14,7 @@ fit_margin_normal <- function(x, weights) {
 
 #' @importFrom kde1d kde1d pkde1d
 fit_margin_kde <- function(x, weights) {
-  fit <- kde1d::kde1d(x, weights = weights)
+  mult <- length(x)^(1 / 5 - 1 / 3.5)
+  fit <- kde1d::kde1d(x, weights = weights, mult = mult, deg = 0)
   function(y) kde1d::pkde1d(y, fit)
 }
