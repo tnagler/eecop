@@ -32,13 +32,15 @@ test_that("discrete fitting works", {
 
 
 test_that("prediction works", {
-  fit <- eecop(y, x)
-  expect_equal(dim(predict(fit, x, t = 1:3 / 4)), c(nrow(x), 3))
-  expect_equal(dim(predict(fit, x, "quantile", t = 1:3 / 4)), c(nrow(x), 3))
-  expect_equal(
-    dim(predict(fit, x, "quantile", t = 1:3 / 4)),
-    c(nrow(x), 3)
-  )
+  for (copula_method in c("vine", "kde", "normal")) {
+    fit <- eecop(y, x, copula_method = copula_method)
+    expect_equal(dim(predict(fit, x, t = 1:3 / 4)), c(nrow(x), 3))
+    expect_equal(dim(predict(fit, x, "quantile", t = 1:3 / 4)), c(nrow(x), 3))
+    expect_equal(
+      dim(predict(fit, x, "quantile", t = 1:3 / 4)),
+      c(nrow(x), 3)
+    )
+  }
 
   fit <- eecop(y, xx)
   expect_equal(dim(predict(fit, xx, t = 1:3 / 4)), c(nrow(x), 3))
