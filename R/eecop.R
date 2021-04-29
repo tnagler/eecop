@@ -60,7 +60,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     nrow(y) == nrow(x),
     is.string(copula_method),
     is.string(margin_method),
-    copula_method %in% c("vine", "normal", "kde", "trafo_kde"),
+    copula_method %in% c("vine", "normal", "kde"),
     margin_method %in% c("kde", "normal"),
     is.numeric(weights)
   )
@@ -102,13 +102,12 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   V <- compute_pseudo_obs(y, margins_Y)
   U <- compute_pseudo_obs(x, margins_X)
 
-  c_YX <- fit_copula(combine_margins(V, U, q, p),
-                     method = copula_method,
-                     weights = weights,
-                     var_types = c(var_types_Y, var_types_X),
-                     ...
+  w_model <- fit_w(V, U,
+                   method = copula_method,
+                   weights = weights,
+                   var_types = c(var_types_Y, var_types_X),
+                   ...
   )
-  c_Y <- fit_copula(V, copula_method, weights, var_types = var_types_Y, ...)
 
   if (length(weights) == 0) {
     weights <- rep(1, n)
@@ -117,8 +116,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   w <- function(x) {
     u <- compute_pseudo_obs(x, margins_X)
     u <- matrix(rep(u, each = n), n, ncol(u))
-    Vu <- combine_margins(V, u, q, p)
-    c_YX(Vu) / c_Y(V) * weights
+    w_model(u) * weights
   }
   structure(
     list(
@@ -146,22 +144,14 @@ fit_margin <- function(x, method, weights) {
   )
 }
 
-fit_copula <- function(u, method, weights, var_types, ...) {
+fit_w <- function(v, u, method, weights, var_types, ...) {
   if (length(var_types) == 1) {
     return(function(u) rep(1, NROW(u)))
   }
   switch(method,
-         "vine" = fit_copula_vine(u, weights, ...),
-         "normal" = fit_copula_normal(u, weights),
-         "kde" = fit_copula_kde(u, weights, ...),
-         "trafo_kde" = fit_copula_trafo_kde(u, weights, ...)
-  )
-}
-
-get_psi <- function(type, y) {
-  switch(type,
-         "expectile" = get_psi_expectile(y),
-         "quantile" = get_psi_quantile(y)
+         "vine" = fit_w_vine(v, u, weights, ...),
+         "normal" = fit_w_normal(v, u, weights),
+         "kde" = fit_w_kde(v, u, weights, ...)
   )
 }
 
