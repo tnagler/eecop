@@ -18,7 +18,9 @@ compute_pseudo_obs <- function(x, margins) {
       u <- cbind(u, u_sub)
     }
   }
-  cut_01(u)
+  if (!all(u == x))  # margin_void was used, we're not on [0, 1]^d !
+    u <- cut_01(u)
+  u
 }
 
 

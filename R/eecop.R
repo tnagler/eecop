@@ -60,7 +60,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     nrow(y) == nrow(x),
     is.string(copula_method),
     is.string(margin_method),
-    copula_method %in% c("vine", "normal", "kde"),
+    copula_method %in% c("vine", "normal", "kde", "trafo_kde"),
     margin_method %in% c("kde", "normal"),
     is.numeric(weights)
   )
@@ -68,6 +68,10 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   if (any(sapply(y, function(yy) is.factor(y) & !is.ordered(y)))) {
     stop("factor-valued response not allowed.")
   }
+  if (copula_method == "kde") {
+    margin_method <- "void"
+  }
+
   x <- rvinecopulib:::expand_factors(x)
 
   q <- ncol(y)
@@ -137,7 +141,8 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
 fit_margin <- function(x, method, weights) {
   switch(method,
     "normal" = fit_margin_normal(x, weights),
-    "kde" = fit_margin_kde(x, weights)
+    "kde" = fit_margin_kde(x, weights),
+    "void" = fit_margin_void(x, weights)
   )
 }
 
@@ -148,7 +153,8 @@ fit_copula <- function(u, method, weights, var_types, ...) {
   switch(method,
     "vine" = fit_copula_vine(u, weights, ...),
     "normal" = fit_copula_normal(u, weights),
-    "kde" = fit_copula_kde(u, weights, ...)
+    "kde" = fit_copula_kde(u, weights, ...),
+    "trafo_kde" = fit_copula_trafo_kde(u, weights, ...)
   )
 }
 

@@ -21,6 +21,36 @@ fit_copula_vine <- function(u, weights, mult = 1, ...) {
 #' @importFrom stats qnorm dnorm cov
 #' @noRd
 fit_copula_kde <- function(u, weights, mult = 1, q = 1, ...) {
+  u <- as.matrix(u)
+  n <- nrow(u)
+  d <- ncol(u)
+  bw <- mult * n^(-2 / (3 + d)) * cov(u)
+  function(u_new) {
+    if (length(weights) == 0) {
+      weights <- rep(1, n)
+    }
+    bws <- replicate(n, bw, simplify = FALSE)
+    bws <- do.call(rbind, bws)
+    f_YX <- ks::dmvnorm.mixt(
+      x = u_new,
+      mus = u,
+      Sigmas = bws,
+      props = weights / sum(weights)
+    )
+    f_Y <- ks::dnorm.mixt(
+      x = u_new[, 1],
+      mus = u[, 1],
+      sigmas = rep(sqrt(bws[1]), n),
+      props = weights / sum(weights)
+    )
+
+    f_YX / f_Y
+  }
+}
+
+#' @importFrom stats qnorm dnorm cov
+#' @noRd
+fit_copula_trafo_kde <- function(u, weights, mult = 1, q = 1, ...) {
   x <- qnorm(u)
   n <- nrow(x)
   d <- ncol(x)
