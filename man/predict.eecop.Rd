@@ -2,12 +2,9 @@
 % Please edit documentation in R/predict.R
 \name{predict.eecop}
 \alias{predict.eecop}
-\alias{predict.eecop_list}
 \title{Prediction of quantiles or expectiles}
 \usage{
 \method{predict}{eecop}(object, x, type = "expectile", t = 0.5, ...)
-
-\method{predict}{eecop_list}(object, x, type = "expectile", t = 0.5, ...)
 }
 \arguments{
 \item{object}{an \code{eecop} object.}

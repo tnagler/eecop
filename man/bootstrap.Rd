@@ -2,9 +2,15 @@
 % Please edit documentation in R/bootstrap.R
 \name{bootstrap}
 \alias{bootstrap}
+\alias{predict.eecop_boot}
+\alias{conf_int}
 \title{Bootstrapping eecop models}
 \usage{
 bootstrap(object, n_boot = 100, rxi = stats::rexp)
+
+\method{predict}{eecop_boot}(object, x, type = "expectile", t = 0.5, ...)
+
+conf_int(object, x, type = "expectile", t = 0.5, conf = 0.9, ...)
 }
 \arguments{
 \item{object}{a fitted \link{eecop} object.}
@@ -33,6 +39,7 @@ fit <- eecop(y, x)
 
 bs_fits <- bootstrap(fit, n_boot = 2)
 preds <- predict(bs_fits, x[1:3, ])
+CI <- confint(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
 }
 \seealso{
 \code{\link[=eecop]{eecop()}}, \code{\link[=predict.eecop_list]{predict.eecop_list()}}

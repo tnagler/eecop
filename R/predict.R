@@ -46,11 +46,6 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   )
 }
 
-#' @rdname predict.eecop
-#' @export
-predict.eecop_list <- function(object, x, type = "expectile", t = 0.5, ...) {
-  lapply(object, function(o) predict(o, x, type = "expectile", t = t))
-}
 
 process_x_new <- function(object, x) {
   if ((NCOL(x) == 1) & (NROW(x) == object$p)) {

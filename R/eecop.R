@@ -68,9 +68,7 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   if (any(sapply(y, function(yy) is.factor(y) & !is.ordered(y)))) {
     stop("factor-valued response not allowed.")
   }
-  if (copula_method == "kde") {
-    margin_method <- "void"
-  }
+
 
   x <- rvinecopulib:::expand_factors(x)
 
@@ -90,6 +88,9 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     }
   }
 
+  if (copula_method == "kde") {
+    margin_method <- "void"
+  }
   margins_Y <- lapply(
     seq_len(q),
     function(j) fit_margin(y[, j], margin_method, weights)
@@ -98,6 +99,9 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
     seq_len(p),
     function(j) fit_margin(x[, j], margin_method, weights)
   )
+  if (margin_method == "void") {
+    margin_method <- "kde"
+  }
 
   V <- compute_pseudo_obs(y, margins_Y)
   U <- compute_pseudo_obs(x, margins_X)

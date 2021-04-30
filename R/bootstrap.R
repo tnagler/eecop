@@ -24,6 +24,7 @@
 #'
 #' bs_fits <- bootstrap(fit, n_boot = 2)
 #' preds <- predict(bs_fits, x[1:3, ])
+#' CI <- confint(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
 bootstrap <- function(object, n_boot = 100, rxi = stats::rexp) {
   assert_that(inherits(object, "eecop"), is.count(n_boot))
   assert_that(is.function(rxi), length(rxi(5)) == 5, is.numeric(rxi(5)))
@@ -37,13 +38,46 @@ bootstrap <- function(object, n_boot = 100, rxi = stats::rexp) {
     weights = object$weights
   )
   args <- utils::modifyList(args, object$dots)
-  out <- lapply(seq_len(n_boot), function(b) {
+  reps <- lapply(seq_len(n_boot), function(b) {
     xi <- rxi(n)
     xi <- (xi - mean(xi)) / sd(xi) + 1
     args$weights <- args$weights * xi
     do.call(eecop, args)
   })
-  class(out) <- "eecop_list"
+  out <- list(orig = object, boot = reps)
+  class(out) <- "eecop_boot"
   out
 }
 
+
+#' @rdname bootstrap
+#' @export
+predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5, ...) {
+  assert_that(inherits(object, "eecop_boot"))
+  orig <- predict(object$orig, x = x, type = type, t = t)
+  boot <- lapply(object$boot, function(o) predict(o, x, type = type, t = t))
+  list(orig = orig, boot = boot)
+}
+
+#' @rdname bootstrap
+#' @export
+conf_int <- function(object, x, type = "expectile", t = 0.5,
+                               conf = 0.9, ...) {
+  assert_that(inherits(object, "eecop_boot"))
+  preds <- predict(object, x = x, type = type, t = t)
+  bdim <- dim(preds$boot[[1]])
+  if (is.null(bdim)) bdim <- length(preds$boot[[1]])
+  boot_arr <- array(unlist(preds$boot), dim = c(bdim, length(preds$boot)))
+
+  alph <- (1 - conf) / 2
+  fix <-  seq_along(dim(boot_arr)[-1])
+  low <- apply(boot_arr, fix, quantile, probs = alph)
+  up <- apply(boot_arr, fix, quantile, probs = 1 - alph)
+  mid <- apply(boot_arr, fix, mean)
+
+  list(
+    lower = preds$orig + mid - up,
+    estimate = preds$orig,
+    upper = preds$orig + mid - low
+  )
+}
