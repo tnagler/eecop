@@ -52,6 +52,20 @@
 #'
 #' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 #' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
+#'
+#' # multivariate responses
+#' x1 <- rnorm(100, mean = 2)
+#' x2 <- rnorm(100, sd = 2)
+#' y1 <- x1 + abs(x2) * rnorm(100)
+#' y2 <- -x1 + abs(x2) * rnorm(100)
+#'
+#' y <- cbind(y1, y2)
+#' x <- cbind(x1, x2)
+#'
+#' fit <- eecop(y, x)
+#'
+#' predict(fit, x[1:3, ], type = "mean")
+#' predict(fit, x[1:3, ], type = "variance")
 eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
                   weights = numeric(), ...) {
   y <- as.data.frame(y)
