@@ -64,16 +64,21 @@ bootstrap <- function(object, n_boot = 100, rxi = stats::rexp) {
 
 #' @rdname bootstrap
 #' @export
-predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5, trafo = function(y) y, ...) {
+predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
+                               trafo = function(y) y, ...) {
   assert_that(inherits(object, "eecop_boot"))
   orig <- predict(object$orig, x = x, type = type, t = t)
-  boot <- lapply(object$boot, function(o) predict(o, x, type = type, t = t, trafo = trafo))
+  boot <- lapply(
+    object$boot,
+    function(o) predict(o, x, type = type, t = t, trafo = trafo)
+  )
   list(orig = orig, boot = boot)
 }
 
 #' @rdname bootstrap
 #' @export
-conf_int <- function(object, x, type = "expectile", t = 0.5, trafo = trafo,
+conf_int <- function(object, x, type = "expectile", t = 0.5,
+                     trafo = function(y) y,
                      conf = 0.9, ...) {
   assert_that(inherits(object, "eecop_boot"))
   preds <- predict(object, x = x, type = type, t = t, trafo = trafo)
