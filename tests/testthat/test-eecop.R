@@ -36,17 +36,26 @@ test_that("prediction works", {
     fit <- eecop(y, x, copula_method = copula_method)
     expect_equal(dim(predict(fit, x, t = 1:3 / 4)), c(nrow(x), 3))
     expect_equal(dim(predict(fit, x, "quantile", t = 1:3 / 4)), c(nrow(x), 3))
-    expect_equal(
-      dim(predict(fit, x, "quantile", t = 1:3 / 4)),
-      c(nrow(x), 3)
-    )
   }
 
   fit <- eecop(y, xx)
   expect_equal(dim(predict(fit, xx, t = 1:3 / 4)), c(nrow(x), 3))
   expect_equal(dim(predict(fit, xx, "quantile", t = 1:3 / 4)), c(nrow(x), 3))
-  expect_equal(
-    dim(predict(fit, xx, "quantile", t = 1:3 / 4)),
-    c(nrow(x), 3)
-  )
+
+  y <- cbind(y, y + rnorm(length(y)))
+  fit <- eecop(y, x)
+  expect_equal(dim(predict(fit, x, "mean")), c(nrow(x), 2))
+  expect_equal(dim(predict(fit, x, "variance", t = 1:3 / 4)), c(2, 2, nrow(x)))
+})
+
+
+test_that("bootstrap works", {
+  fit <- eecop(y, x)
+  fit_bs <- bootstrap(fit, n_boot = 2)
+  expect_length(fit_bs, 2)
+  expect_true(all(sapply(fit_bs, class) == "eecop"))
+
+  pred_exp <- predict(fit_bs, x, t = 1:3 / 4)
+  expect_equal(dim(pred_exp[[1]]), c(nrow(x), 3))
+  expect_length(pred_exp, 2)
 })
