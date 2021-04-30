@@ -2,8 +2,8 @@
 #'
 #' Given a fitted model for the weight function, [bootstrap()] generates a
 #' number of bootstrap replicates from this model. A multiplier bootstrap
-#' procedure is used. The result can be passed to [predict.eecop_boot()] to 
-#' generate bootstrapped predictions, or [conf_int()] to compute confidence 
+#' procedure is used. The result can be passed to [predict.eecop_boot()] to
+#' generate bootstrapped predictions, or [conf_int()] to compute confidence
 #' intervals directly.
 #'
 #' @param object a fitted [eecop] object.
@@ -19,7 +19,7 @@
 #' @param conf confidence level.
 #' @param ... unused.
 #'
-#' @return An objecvt of class `eccop_boot` containing the original [eecop] 
+#' @return An objecvt of class `eccop_boot` containing the original [eecop]
 #' object and bootstrap replicates.
 #' @seealso [eecop()], [predict.eecop_boot()]
 #' @export
@@ -71,7 +71,7 @@ predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5, ...) {
 #' @rdname bootstrap
 #' @export
 conf_int <- function(object, x, type = "expectile", t = 0.5,
-                               conf = 0.9, ...) {
+                     conf = 0.9, ...) {
   assert_that(inherits(object, "eecop_boot"))
   preds <- predict(object, x = x, type = type, t = t)
   bdim <- dim(preds$boot[[1]])
@@ -79,7 +79,7 @@ conf_int <- function(object, x, type = "expectile", t = 0.5,
   boot_arr <- array(unlist(preds$boot), dim = c(bdim, length(preds$boot)))
 
   alph <- (1 - conf) / 2
-  fix <-  seq_along(dim(boot_arr)[-1])
+  fix <- seq_along(dim(boot_arr)[-1])
   low <- apply(boot_arr, fix, stats::quantile, probs = alph)
   up <- apply(boot_arr, fix, stats::quantile, probs = 1 - alph)
   mid <- apply(boot_arr, fix, mean)
