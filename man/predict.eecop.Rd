@@ -5,9 +5,9 @@
 \alias{predict.eecop_list}
 \title{Prediction of quantiles or expectiles}
 \usage{
-\method{predict}{eecop}(object, x, type = "expectile", t = 0.5)
+\method{predict}{eecop}(object, x, type = "expectile", t = 0.5, ...)
 
-\method{predict}{eecop_list}(object, x, type = "expectile", t = 0.5)
+\method{predict}{eecop_list}(object, x, type = "expectile", t = 0.5, ...)
 }
 \arguments{
 \item{object}{an \code{eecop} object.}
@@ -38,8 +38,12 @@ x <- matrix(rnorm(200), 100, 2)
 y <- rowSums(x) + rnorm(100)
 
 fit <- eecop(y, x)
-predict(fit, x, t = c(0.5, 0.9), type = "quantile")
-predict(fit, x, t = c(0.5, 0.9), type = "expectile")
+predict(fit, x[1:3, ], t = c(0.5, 0.9), type = "quantile")
+predict(fit, x[1:3, ], t = c(0.5, 0.9), type = "expectile")
+
+y <- cbind(y1 = y, y2 = y + rnorm(100))
+predict(fit, x[1:3, ], type = "mean")
+predict(fit, x[1:3, ], type = "variance")
 }
 \references{
 Nagler, T. and Vatter, T. (2020). Solving estimating equations

@@ -33,7 +33,8 @@
 #' predict(fit, x[1:3, ], type = "mean")
 #' predict(fit, x[1:3, ], type = "variance")
 #' @importFrom assertthat is.scalar is.string
-predict.eecop <- function(object, x, type = "expectile", t = 0.5) {
+#' @importFrom stats predict
+predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   assert_that(is.string(type))
   switch(
     type,
@@ -47,7 +48,7 @@ predict.eecop <- function(object, x, type = "expectile", t = 0.5) {
 
 #' @rdname predict.eecop
 #' @export
-predict.eecop_list <- function(object, x, type = "expectile", t = 0.5) {
+predict.eecop_list <- function(object, x, type = "expectile", t = 0.5, ...) {
   lapply(object, function(o) predict(o, x, type = "expectile", t = t))
 }
 
@@ -76,14 +77,13 @@ predict_mean <- function(object, x) {
   pred
 }
 
-
 predict_variance <- function(object, x) {
   x <- process_x_new(object, x)
   vapply(
     seq_len(nrow(x)),
     function(i) {
       w <- object$w(x[i, , drop = FALSE]) * object$weights
-      cov.wt(object$y, wt = w / sum(w))$cov
+      stats::cov.wt(object$y, wt = w / sum(w))$cov
     },
     matrix(1, object$q, object$q)
   )
@@ -157,25 +157,44 @@ predict_expectile <- function(object, x, t = 0.5) {
 #' user-supplied identifying function.
 #'
 #' @param object a fitted [eecop] object.
-#' @param x
-#' @param idfun
-#' @param theta_start
-#' @param ...
+#' @param x covariate values to predict on; must match the format used for
+#'   fitting the `eecop()` model.
+#' @param idfun a function with signature `function(y, theta)` with `y` the
+#'   response (vector or matrix) and `theta` the parameter of interest. The
+#'   function should return a vector of length `NROW(object$y)` or a matrix with
+#'   `NROW(object$y)` rows.
+#' @param theta_start starting values for optimizing the parameter of interest.
+#' @param ... further arguments passed to [optim()].
 #'
-#' @return
+#' @return The optimal parameter `theta`.
 #' @export
 #'
 #' @examples
+#' ## fit dummy model
+#' x <- matrix(rnorm(200), 100, 2)
+#' y <- rowSums(x) + rnorm(100)
+#' fit <- eecop(y, x)
+#'
+#' ## identifying function for 0.5 and 0.9 quantiles
+#' idfun <- function(y, theta) {
+#'   t <- c(0.5, 0.9)
+#'   gmat <- matrix(NA, NROW(y), 2)
+#'   for (j in 1:2) gmat[, j] <- (y <= theta[j]) - t[j]
+#'   gmat
+#' }
+#'
+#' ## solve estimating equation
+#' solve_eecop(fit, x[1:3, ], idfun = idfun, theta_start = rep(0, 2))
+#'
 solve_eecop <- function(object, x, idfun, theta_start, ...) {
   x <- process_x_new(object, x)
   lapply(
     seq_len(nrow(x)),
     function(i, ...) {
-      browser()
       w <- object$w(x[i, , drop = FALSE]) * object$weights
       w <- w / sum(w)
       Eg2 <- function(theta) sqrt(sum(colSums(idfun(object$y, theta) * w)^2))
-      optim(theta_start, fn = Eg2, ...)$par
+      stats::optim(theta_start, fn = Eg2, ...)$par
     },
     ...
   )

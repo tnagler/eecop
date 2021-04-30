@@ -1,6 +1,6 @@
 #' Bootstrapping eecop models
 #'
-#' Given a fitted model for the weight function, [bootstrap.eecop] generates a
+#' Given a fitted model for the weight function, [bootstrap()] generates a
 #' number of bootstrap replicates from this model. A multiplier bootstrap
 #' procedure is used.
 #'
@@ -12,7 +12,7 @@
 #'   'Bayesian bootstrap'.
 #'
 #' @return A list of [eecop] objects.
-#' @seealso [eecop()], [predict.bootstrap_list()]
+#' @seealso [eecop()], [predict.eecop_list()]
 #' @export
 #' @importFrom assertthat is.count
 #' @examples
@@ -23,8 +23,8 @@
 #' fit <- eecop(y, x)
 #'
 #' bs_fits <- bootstrap(fit, n_boot = 2)
-#' preds <- predict(bs_fits)
-bootstrap.eecop <- function(object, n_boot = 100, rxi = rexp) {
+#' preds <- predict(bs_fits, x[1:3, ])
+bootstrap <- function(object, n_boot = 100, rxi = stats::rexp) {
   assert_that(inherits(object, "eecop"), is.count(n_boot))
   assert_that(is.function(rxi), length(rxi(5)) == 5, is.numeric(rxi(5)))
 
@@ -36,7 +36,7 @@ bootstrap.eecop <- function(object, n_boot = 100, rxi = rexp) {
     margin_method = object$margin_method,
     weights = object$weights
   )
-  args <- modifyList(args, object$dots)
+  args <- utils::modifyList(args, object$dots)
   out <- lapply(seq_len(n_boot), function(b) {
     xi <- rxi(n)
     xi <- (xi - mean(xi)) / sd(xi) + 1
@@ -46,3 +46,4 @@ bootstrap.eecop <- function(object, n_boot = 100, rxi = rexp) {
   class(out) <- "eecop_list"
   out
 }
+
