@@ -36,8 +36,7 @@
 #' @importFrom stats predict
 predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
   assert_that(is.string(type))
-  switch(
-    type,
+  switch(type,
     "mean" = predict_mean(object, x),
     "variance" = predict_variance(object, x),
     "expectile" = predict_expectile(object, x, t = t),
@@ -62,7 +61,7 @@ predict_mean <- function(object, x) {
     seq_len(nrow(x)),
     function(i) {
       w <- object$w(x[i, , drop = FALSE]) * object$weights
-      colMeans(object$y * w / sum(w))
+      colSums(object$y * w / sum(w))
     },
     numeric(object$q)
   )
@@ -109,8 +108,8 @@ predict_uni_x <- function(x, psi, t, w, weights, range, tol) {
   }
   range <- range + c(-0.25, 0.25) * diff(range)
   lapply(t, predict_uni_t,
-         psi = psi, w_x = w_x[w_sel],
-         w_sel = w_sel, range = range, tol = tol
+    psi = psi, w_x = w_x[w_sel],
+    w_sel = w_sel, range = range, tol = tol
   )
 }
 
@@ -120,8 +119,9 @@ predict_uni_t <- function(t, psi, w_x, w_sel, range, tol) {
 }
 
 predict_quantile <- function(object, x, t = 0.5) {
-  if (object$q > 1)
+  if (object$q > 1) {
     stop("can't predict quantiles for multivariate response.")
+  }
   x <- process_x_new(object, x)
   assert_that(is.numeric(t), all((0 < t) & (t < 1)))
 
@@ -132,13 +132,14 @@ predict_quantile <- function(object, x, t = 0.5) {
 }
 
 predict_expectile <- function(object, x, t = 0.5) {
-  if (object$q > 1)
+  if (object$q > 1) {
     stop("can't predict expectiles for multivariate response.")
+  }
   x <- process_x_new(object, x)
   assert_that(is.numeric(t), all((0 < t) & (t < 1)))
 
   y <- object$y[[1]]
-  idfun <-  function(theta, t) {
+  idfun <- function(theta, t) {
     t * (y - theta) * (y >= theta) - (1 - t) * (theta - y) * (y < theta)
   }
   predict_uniroot(object, x, t, idfun)
@@ -180,7 +181,6 @@ predict_expectile <- function(object, x, t = 0.5) {
 #'
 #' ## solve estimating equation
 #' solve_eecop(fit, x[1:3, ], idfun = idfun, theta_start = rep(0, 2))
-#'
 solve_eecop <- function(object, x, idfun, theta_start, ...) {
   x <- process_x_new(object, x)
   lapply(

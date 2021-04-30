@@ -52,6 +52,20 @@
 #'
 #' predict(fit, x, t = c(0.5, 0.9), type = "quantile")
 #' predict(fit, x, t = c(0.5, 0.9), type = "expectile")
+#'
+#' # multivariate responses
+#' x1 <- rnorm(100, mean = 2)
+#' x2 <- rnorm(100, sd = 2)
+#' y1 <- x1 + abs(x2) * rnorm(100)
+#' y2 <- -x1 + abs(x2) * rnorm(100)
+#'
+#' y <- cbind(y1, y2)
+#' x <- cbind(x1, x2)
+#'
+#' fit <- eecop(y, x)
+#'
+#' predict(fit, x[1:3, ], type = "mean")
+#' predict(fit, x[1:3, ], type = "variance")
 eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
                   weights = numeric(), ...) {
   y <- as.data.frame(y)
@@ -107,10 +121,10 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   U <- compute_pseudo_obs(x, margins_X)
 
   w_model <- fit_w(V, U,
-                   method = copula_method,
-                   weights = weights,
-                   var_types = c(var_types_Y, var_types_X),
-                   ...
+    method = copula_method,
+    weights = weights,
+    var_types = c(var_types_Y, var_types_X),
+    ...
   )
 
   if (length(weights) == 0) {
@@ -143,9 +157,9 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
 
 fit_margin <- function(x, method, weights) {
   switch(method,
-         "normal" = fit_margin_normal(x, weights),
-         "kde" = fit_margin_kde(x, weights),
-         "void" = fit_margin_void(x, weights)
+    "normal" = fit_margin_normal(x, weights),
+    "kde" = fit_margin_kde(x, weights),
+    "void" = fit_margin_void(x, weights)
   )
 }
 
@@ -154,12 +168,8 @@ fit_w <- function(v, u, method, weights, var_types, ...) {
     return(function(u) rep(1, NROW(u)))
   }
   switch(method,
-         "vine" = fit_w_vine(v, u, weights, ...),
-         "normal" = fit_w_normal(v, u, weights),
-         "kde" = fit_w_kde(v, u, weights, ...)
+    "vine" = fit_w_vine(v, u, weights, ...),
+    "normal" = fit_w_normal(v, u, weights),
+    "kde" = fit_w_kde(v, u, weights, ...)
   )
 }
-
-
-
-
