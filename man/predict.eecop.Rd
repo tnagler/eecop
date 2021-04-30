@@ -4,7 +4,7 @@
 \alias{predict.eecop}
 \title{Prediction of quantiles or expectiles}
 \usage{
-\method{predict}{eecop}(object, x, type = "expectile", t = 0.5, ...)
+\method{predict}{eecop}(object, x, type = "expectile", t = 0.5, trafo = function(y) y, ...)
 }
 \arguments{
 \item{object}{an \code{eecop} object.}
@@ -15,6 +15,10 @@ fitting the \code{eecop()} model.}
 \item{type}{either \code{"quantile"}, \code{"expectile"}, \code{"mean"}, or \code{"variance"}.}
 
 \item{t}{a vector of quantile/expectile levels.}
+
+\item{trafo}{a function with signature \verb{function(y)} with \code{y} the
+response (vector or matrix). The function should return a
+vector of length \code{NROW(object$y)} or a matrix with \code{NROW(object$y)} rows.`}
 
 \item{...}{unused.}
 }
@@ -31,6 +35,7 @@ Predicts quantiles, expectiles, mean vectors, or covariate matrices from an
 Vatter (2020).
 }
 \examples{
+# univariate response
 x <- matrix(rnorm(200), 100, 2)
 y <- rowSums(x) + rnorm(100)
 
@@ -38,9 +43,13 @@ fit <- eecop(y, x)
 predict(fit, x[1:3, ], t = c(0.5, 0.9), type = "quantile")
 predict(fit, x[1:3, ], t = c(0.5, 0.9), type = "expectile")
 
+# multivariate response
 y <- cbind(y1 = y, y2 = y + rnorm(100))
+fit <- eecop(y, x)
+
 predict(fit, x[1:3, ], type = "mean")
 predict(fit, x[1:3, ], type = "variance")
+predict(fit, x[1:3, ], type = "quantile", trafo = function(y) y[, 1] + y[, 2])
 }
 \references{
 Nagler, T. and Vatter, T. (2020). Solving estimating equations

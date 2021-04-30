@@ -9,6 +9,9 @@
 #'   fitting the `eecop()` model.
 #' @param type either `"quantile"`, `"expectile"`, `"mean"`, or `"variance"`.
 #' @param t a vector of quantile/expectile levels.
+#' @param trafo a function with signature `function(y)` with `y` the
+#'   response (vector or matrix). The function should return a
+#'   vector of length `NROW(object$y)` or a matrix with `NROW(object$y)` rows.`
 #' @param ... unused.
 #'
 #' @return For `"quantile"` and `"expectile"`: a matrix of predictions, each
@@ -22,6 +25,7 @@
 #'   with copulas. arXiv:1801.10576
 #'
 #' @examples
+#' # univariate response
 #' x <- matrix(rnorm(200), 100, 2)
 #' y <- rowSums(x) + rnorm(100)
 #'
@@ -29,18 +33,28 @@
 #' predict(fit, x[1:3, ], t = c(0.5, 0.9), type = "quantile")
 #' predict(fit, x[1:3, ], t = c(0.5, 0.9), type = "expectile")
 #'
+#' # multivariate response
 #' y <- cbind(y1 = y, y2 = y + rnorm(100))
+#' fit <- eecop(y, x)
+#'
 #' predict(fit, x[1:3, ], type = "mean")
 #' predict(fit, x[1:3, ], type = "variance")
+#' predict(fit, x[1:3, ], type = "quantile", trafo = function(y) y[, 1] + y[, 2])
 #' @importFrom assertthat is.scalar is.string
 #' @importFrom stats predict
-predict.eecop <- function(object, x, type = "expectile", t = 0.5, ...) {
+predict.eecop <- function(object,
+                          x,
+                          type = "expectile",
+                          t = 0.5,
+                          trafo = function(y) y,
+                          ...) {
   assert_that(is.string(type))
+  y <- as.data.frame(trafo(object$y))
   switch(type,
-    "mean" = predict_mean(object, x),
-    "variance" = predict_variance(object, x),
-    "expectile" = predict_expectile(object, x, t = t),
-    "quantile" = predict_quantile(object, x, t = t),
+    "mean" = predict_mean(object, y, x),
+    "variance" = predict_variance(object, y, x),
+    "expectile" = predict_expectile(object, y, x, t),
+    "quantile" = predict_quantile(object, y, x, t),
     stop(paste0("type '", type, "' not implemented"))
   )
 }
@@ -55,37 +69,36 @@ process_x_new <- function(object, x) {
   x
 }
 
-predict_mean <- function(object, x) {
+predict_mean <- function(object, y, x) {
   x <- process_x_new(object, x)
   pred <- vapply(
     seq_len(nrow(x)),
     function(i) {
       w <- object$w(x[i, , drop = FALSE]) * object$weights
-      colSums(object$y * w / sum(w))
+      colSums(y * w / sum(w))
     },
-    numeric(object$q)
+    numeric(ncol(y))
   )
-  if (object$q > 1) {
+  if (ncol(y) > 1) {
     pred <- t(pred)
   }
   pred
 }
 
-predict_variance <- function(object, x) {
+predict_variance <- function(object, y, x) {
   x <- process_x_new(object, x)
   vapply(
     seq_len(nrow(x)),
     function(i) {
       w <- object$w(x[i, , drop = FALSE]) * object$weights
-      stats::cov.wt(object$y, wt = w / sum(w))$cov
+      stats::cov.wt(y, wt = w / sum(w))$cov
     },
-    matrix(1, object$q, object$q)
+    matrix(1, ncol(y), ncol(y))
   )
 }
 
-predict_uniroot <- function(object, x, t, idfun) {
+predict_uniroot <- function(object, y, x, t, idfun) {
   x <- process_x_new(object, x)
-  tol <- sd(object$y[[1]]) / object$n
   out <- sapply(
     seq_len(nrow(x)),
     function(i, ...) predict_uni_x(x[i, , drop = FALSE], ...),
@@ -93,12 +106,11 @@ predict_uniroot <- function(object, x, t, idfun) {
     t = t,
     w = object$w,
     weights = object$weights,
-    range = range(object$y),
-    tol = sd(object$y[[1]]) / object$n
+    range = range(y),
+    tol = sd(y) / object$n
   )
   matrix(unlist(out), NROW(x), length(t), byrow = TRUE)
 }
-
 
 predict_uni_x <- function(x, psi, t, w, weights, range, tol) {
   w_x <- w(x) * weights
@@ -118,31 +130,32 @@ predict_uni_t <- function(t, psi, w_x, w_sel, range, tol) {
   root_solve(Eg, range, tol)
 }
 
-predict_quantile <- function(object, x, t = 0.5) {
-  if (object$q > 1) {
+predict_quantile <- function(object, y, x, t = 0.5) {
+  if (ncol(y) > 1) {
     stop("can't predict quantiles for multivariate response.")
   }
   x <- process_x_new(object, x)
+  y <- y[[1]]
   assert_that(is.numeric(t), all((0 < t) & (t < 1)))
 
   idfun <- function(theta, t) {
-    (object$y[[1]] <= theta) - t
+    (y <= theta) - t
   }
-  predict_uniroot(object, x, t, idfun)
+  predict_uniroot(object, y, x, t, idfun)
 }
 
-predict_expectile <- function(object, x, t = 0.5) {
-  if (object$q > 1) {
+predict_expectile <- function(object, y, x, t = 0.5) {
+  if (ncol(y) > 1) {
     stop("can't predict expectiles for multivariate response.")
   }
   x <- process_x_new(object, x)
+  y <- y[[1]]
   assert_that(is.numeric(t), all((0 < t) & (t < 1)))
 
-  y <- object$y[[1]]
   idfun <- function(theta, t) {
     t * (y - theta) * (y >= theta) - (1 - t) * (theta - y) * (y < theta)
   }
-  predict_uniroot(object, x, t, idfun)
+  predict_uniroot(object, y, x, t, idfun)
 }
 
 

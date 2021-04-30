@@ -8,9 +8,17 @@
 \usage{
 bootstrap(object, n_boot = 100, rxi = stats::rexp)
 
-\method{predict}{eecop_boot}(object, x, type = "expectile", t = 0.5, ...)
+\method{predict}{eecop_boot}(object, x, type = "expectile", t = 0.5, trafo = function(y) y, ...)
 
-conf_int(object, x, type = "expectile", t = 0.5, conf = 0.9, ...)
+conf_int(
+  object,
+  x,
+  type = "expectile",
+  t = 0.5,
+  trafo = trafo,
+  conf = 0.9,
+  ...
+)
 }
 \arguments{
 \item{object}{a fitted \link{eecop} object.}
@@ -28,6 +36,10 @@ fitting the \code{eecop()} model.}
 \item{type}{either \code{"quantile"}, \code{"expectile"}, \code{"mean"}, or \code{"variance"}.}
 
 \item{t}{a vector of quantile/expectile levels.}
+
+\item{trafo}{a function with signature \verb{function(y)} with \code{y} the
+response (vector or matrix). The function should return a
+vector of length \code{NROW(object$y)} or a matrix with \code{NROW(object$y)} rows.}
 
 \item{...}{unused.}
 
