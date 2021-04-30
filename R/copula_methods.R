@@ -15,7 +15,7 @@ fit_w_normal <- function(v, u, weights) {
     )
     copula::dCopula(v, c_Y)
   } else {
-   rep(1, length(v))
+    rep(1, length(v))
   }
 
   function(u_new) {
