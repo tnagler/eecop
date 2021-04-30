@@ -75,7 +75,7 @@ predict_mean <- function(object, y, x) {
     seq_len(nrow(x)),
     function(i) {
       w <- object$w(x[i, , drop = FALSE]) * object$weights
-      colMeans(y * w / sum(w))
+      colSums(y * w / sum(w))
     },
     numeric(ncol(y))
   )
@@ -111,7 +111,6 @@ predict_uniroot <- function(object, y, x, t, idfun) {
   )
   matrix(unlist(out), NROW(x), length(t), byrow = TRUE)
 }
-
 
 predict_uni_x <- function(x, psi, t, w, weights, range, tol) {
   w_x <- w(x) * weights
