@@ -2,7 +2,9 @@
 #'
 #' Given a fitted model for the weight function, [bootstrap()] generates a
 #' number of bootstrap replicates from this model. A multiplier bootstrap
-#' procedure is used.
+#' procedure is used. The result can be passed to [predict.eecop_boot()] to 
+#' generate bootstrapped predictions, or [conf_int()] to compute confidence 
+#' intervals directly.
 #'
 #' @param object a fitted [eecop] object.
 #' @param n_boot number of bootstrap replicates.
@@ -10,9 +12,16 @@
 #'   take the number of samples as its first argument and return a numeric
 #'   vector of this length. Default is [rexp()], which corresponds to the
 #'   'Bayesian bootstrap'.
+#' @param x covariate values to predict on; must match the format used for
+#'   fitting the `eecop()` model.
+#' @param type either `"quantile"`, `"expectile"`, `"mean"`, or `"variance"`.
+#' @param t a vector of quantile/expectile levels.
+#' @param conf confidence level.
+#' @param ... unused.
 #'
-#' @return A list of [eecop] objects.
-#' @seealso [eecop()], [predict.eecop_list()]
+#' @return An objecvt of class `eccop_boot` containing the original [eecop] 
+#' object and bootstrap replicates.
+#' @seealso [eecop()], [predict.eecop_boot()]
 #' @export
 #' @importFrom assertthat is.count
 #' @examples
@@ -24,7 +33,7 @@
 #'
 #' bs_fits <- bootstrap(fit, n_boot = 2)
 #' preds <- predict(bs_fits, x[1:3, ])
-#' CI <- confint(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
+#' CI <- conf_int(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
 bootstrap <- function(object, n_boot = 100, rxi = stats::rexp) {
   assert_that(inherits(object, "eecop"), is.count(n_boot))
   assert_that(is.function(rxi), length(rxi(5)) == 5, is.numeric(rxi(5)))
@@ -71,8 +80,8 @@ conf_int <- function(object, x, type = "expectile", t = 0.5,
 
   alph <- (1 - conf) / 2
   fix <-  seq_along(dim(boot_arr)[-1])
-  low <- apply(boot_arr, fix, quantile, probs = alph)
-  up <- apply(boot_arr, fix, quantile, probs = 1 - alph)
+  low <- apply(boot_arr, fix, stats::quantile, probs = alph)
+  up <- apply(boot_arr, fix, stats::quantile, probs = 1 - alph)
   mid <- apply(boot_arr, fix, mean)
 
   list(

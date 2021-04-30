@@ -21,14 +21,28 @@ conf_int(object, x, type = "expectile", t = 0.5, conf = 0.9, ...)
 take the number of samples as its first argument and return a numeric
 vector of this length. Default is \code{\link[=rexp]{rexp()}}, which corresponds to the
 'Bayesian bootstrap'.}
+
+\item{x}{covariate values to predict on; must match the format used for
+fitting the \code{eecop()} model.}
+
+\item{type}{either \code{"quantile"}, \code{"expectile"}, \code{"mean"}, or \code{"variance"}.}
+
+\item{t}{a vector of quantile/expectile levels.}
+
+\item{...}{unused.}
+
+\item{conf}{confidence level.}
 }
 \value{
-A list of \link{eecop} objects.
+An objecvt of class \code{eccop_boot} containing the original \link{eecop}
+object and bootstrap replicates.
 }
 \description{
 Given a fitted model for the weight function, \code{\link[=bootstrap]{bootstrap()}} generates a
 number of bootstrap replicates from this model. A multiplier bootstrap
-procedure is used.
+procedure is used. The result can be passed to \code{\link[=predict.eecop_boot]{predict.eecop_boot()}} to
+generate bootstrapped predictions, or \code{\link[=conf_int]{conf_int()}} to compute confidence
+intervals directly.
 }
 \examples{
 # model with continuous variables
@@ -39,8 +53,8 @@ fit <- eecop(y, x)
 
 bs_fits <- bootstrap(fit, n_boot = 2)
 preds <- predict(bs_fits, x[1:3, ])
-CI <- confint(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
+CI <- conf_int(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
 }
 \seealso{
-\code{\link[=eecop]{eecop()}}, \code{\link[=predict.eecop_list]{predict.eecop_list()}}
+\code{\link[=eecop]{eecop()}}, \code{\link[=predict.eecop_boot]{predict.eecop_boot()}}
 }
