@@ -44,5 +44,4 @@ idfun <- function(y, theta) {
 
 ## solve estimating equation
 solve_eecop(fit, x[1:3, ], idfun = idfun, theta_start = rep(0, 2))
-
 }
