@@ -6,7 +6,7 @@
 \alias{conf_int}
 \title{Bootstrapping eecop models}
 \usage{
-bootstrap(object, n_boot = 100, rxi = stats::rexp)
+bootstrap(object, n_boot = 100, rxi = stats::rexp, cores = 1)
 
 \method{predict}{eecop_boot}(object, x, type = "expectile", t = 0.5, trafo = function(y) y, ...)
 
@@ -15,7 +15,7 @@ conf_int(
   x,
   type = "expectile",
   t = 0.5,
-  trafo = trafo,
+  trafo = function(y) y,
   conf = 0.9,
   ...
 )
@@ -28,7 +28,13 @@ conf_int(
 \item{rxi}{a function generating bootstrap multipliers; the function needs to
 take the number of samples as its first argument and return a numeric
 vector of this length. Default is \code{\link[=rexp]{rexp()}}, which corresponds to the
-'Bayesian bootstrap'.}
+'Bayesian bootstrap'. Note that, for the theory to work,
+one should normalize so that \code{E(rxi) = var(rxi) = 1}, e.g.
+with \code{function(n) {xi <- rxi(n); return((xi - mean(xi)) / sd(xi) + 1)}}.}
+
+\item{cores}{an integer for the number of cores to use; if \code{cores > 1},
+estimation will be parallelized
+within over \code{n_boot} (using \code{\link[parallel:clusterApply]{parallel::parLapply()}}).}
 
 \item{x}{covariate values to predict on; must match the format used for
 fitting the \code{eecop()} model.}

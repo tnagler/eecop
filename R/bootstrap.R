@@ -11,7 +11,12 @@
 #' @param rxi a function generating bootstrap multipliers; the function needs to
 #'   take the number of samples as its first argument and return a numeric
 #'   vector of this length. Default is [rexp()], which corresponds to the
-#'   'Bayesian bootstrap'.
+#'   'Bayesian bootstrap'. Note that, for the theory to work,
+#'   one should normalize so that `E(rxi) = var(rxi) = 1`, e.g.
+#'   with `function(n) {xi <- rxi(n); return((xi - mean(xi)) / sd(xi) + 1)}`.
+#' @param cores an integer for the number of cores to use; if `cores > 1`,
+#' estimation will be parallelized
+#' within over `n_boot` (using [parallel::parLapply()]).
 #' @param x covariate values to predict on; must match the format used for
 #'   fitting the `eecop()` model.
 #' @param type either `"quantile"`, `"expectile"`, `"mean"`, or `"variance"`.
@@ -27,6 +32,7 @@
 #' @seealso [eecop()], [predict.eecop_boot()]
 #' @export
 #' @importFrom assertthat is.count
+#' @importFrom parallel makeCluster stopCluster parLapply
 #' @examples
 #' # model with continuous variables
 #' x <- matrix(rnorm(200), 100, 2)
@@ -37,9 +43,16 @@
 #' bs_fits <- bootstrap(fit, n_boot = 2)
 #' preds <- predict(bs_fits, x[1:3, ])
 #' CI <- conf_int(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
-bootstrap <- function(object, n_boot = 100, rxi = stats::rexp) {
+bootstrap <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
   assert_that(inherits(object, "eecop"), is.count(n_boot))
   assert_that(is.function(rxi), length(rxi(5)) == 5, is.numeric(rxi(5)))
+  assert_that(is.count(cores))
+
+  if (cores > 1) {
+    cl <- makeCluster(cores)
+    on.exit(try(stopCluster(cl), silent = TRUE))
+    lapply <- function(...) parLapply(cl, ...)
+  }
 
   n <- object$n
   args <- list(
@@ -50,12 +63,12 @@ bootstrap <- function(object, n_boot = 100, rxi = stats::rexp) {
     weights = object$weights
   )
   args <- utils::modifyList(args, object$dots)
-  reps <- lapply(seq_len(n_boot), function(b) {
+  do_one <- function(b) {
     xi <- rxi(n)
-    xi <- (xi - mean(xi)) / sd(xi) + 1
     args$weights <- args$weights * xi
     do.call(eecop, args)
-  })
+  }
+  reps <- lapply(seq_len(n_boot), do_one)
   out <- list(orig = object, boot = reps)
   class(out) <- "eecop_boot"
   out
