@@ -80,7 +80,7 @@ bootstrap <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
 predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
                                trafo = function(y) y, ...) {
   assert_that(inherits(object, "eecop_boot"))
-  orig <- predict(object$orig, x = x, type = type, t = t)
+  orig <- predict(object$orig, x = x, type = type, t = t, trafo = trafo)
   boot <- lapply(
     object$boot,
     function(o) predict(o, x, type = type, t = t, trafo = trafo)
