@@ -18,6 +18,7 @@ Imports:
     copula,
     assertthat,
     kde1d,
+    parallel,
     wdm
 URL: https://github.com/tnagler/eecop
 BugReports: https://github.com/tnagler/eecop/issues
