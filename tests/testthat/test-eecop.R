@@ -51,7 +51,7 @@ test_that("prediction works", {
 
 test_that("bootstrap works", {
   fit <- eecop(y, x)
-  fit_bs <- bootstrap(fit, n_boot = 2)
+  fit_bs <- eecop_boot(fit, n_boot = 2)
   expect_equal(names(fit_bs), c("orig", "boot"))
   expect_length(fit_bs$boot, 2)
   expect_true(all(sapply(fit_bs$boot, class) == "eecop"))
@@ -70,7 +70,7 @@ test_that("bootstrap works", {
 
   y <- cbind(y, y + 0.1 * rnorm(length(y)))
   fit <- eecop(y, x)
-  fit_bs <- bootstrap(fit, n_boot = 2)
+  fit_bs <- eecop_boot(fit, n_boot = 2)
   ci <- conf_int(fit_bs, x, type = "variance")
   expect_length(ci, 3)
   expect_equal(names(ci), c("lower", "estimate", "upper"))

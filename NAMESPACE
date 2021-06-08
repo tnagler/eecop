@@ -2,9 +2,9 @@
 
 S3method(predict,eecop)
 S3method(predict,eecop_boot)
-export(bootstrap)
 export(conf_int)
 export(eecop)
+export(eecop_boot)
 export(solve_eecop)
 importFrom(assertthat,assert_that)
 importFrom(assertthat,is.count)

@@ -1,6 +1,6 @@
 #' Bootstrapping eecop models
 #'
-#' Given a fitted model for the weight function, [bootstrap()] generates a
+#' Given a fitted model for the weight function, [eecop_boot()] generates a
 #' number of bootstrap replicates from this model. A multiplier bootstrap
 #' procedure is used. The result can be passed to [predict.eecop_boot()] to
 #' generate bootstrapped predictions, or [conf_int()] to compute confidence
@@ -40,10 +40,10 @@
 #'
 #' fit <- eecop(y, x)
 #'
-#' bs_fits <- bootstrap(fit, n_boot = 2)
+#' bs_fits <- eecop_boot(fit, n_boot = 2)
 #' preds <- predict(bs_fits, x[1:3, ])
 #' CI <- conf_int(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
-bootstrap <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
+eecop_boot <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
   assert_that(inherits(object, "eecop"), is.count(n_boot))
   assert_that(is.function(rxi), length(rxi(5)) == 5, is.numeric(rxi(5)))
   assert_that(is.count(cores))
@@ -75,7 +75,7 @@ bootstrap <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
 }
 
 
-#' @rdname bootstrap
+#' @rdname eecop_boot
 #' @export
 predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
                                trafo = function(y) y, ...) {
@@ -88,7 +88,7 @@ predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
   list(orig = orig, boot = boot)
 }
 
-#' @rdname bootstrap
+#' @rdname eecop_boot
 #' @export
 conf_int <- function(object, x, type = "expectile", t = 0.5,
                      trafo = function(y) y,
