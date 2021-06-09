@@ -18,3 +18,7 @@ fit_margin_kde <- function(x, weights) {
   fit <- kde1d::kde1d(x, weights = weights, mult = mult, deg = 0)
   function(y) kde1d::pkde1d(y, fit)
 }
+
+fit_margin_void <- function(x, weights) {
+  return(function(y) y)
+}

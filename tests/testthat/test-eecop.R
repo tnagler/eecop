@@ -32,19 +32,47 @@ test_that("discrete fitting works", {
 
 
 test_that("prediction works", {
-  fit <- eecop(y, x)
-  expect_equal(dim(predict(fit, x, t = 1:3 / 4)), c(nrow(x), 3))
-  expect_equal(dim(predict(fit, x, "quantile", t = 1:3 / 4)), c(nrow(x), 3))
-  expect_equal(
-    dim(predict(fit, x, "quantile", t = 1:3 / 4, weights = w)),
-    c(nrow(x), 3)
-  )
+  for (copula_method in c("vine", "kde", "normal")) {
+    fit <- eecop(y, x, copula_method = copula_method)
+    expect_equal(dim(predict(fit, x, t = 1:3 / 4)), c(nrow(x), 3))
+    expect_equal(dim(predict(fit, x, "quantile", t = 1:3 / 4)), c(nrow(x), 3))
+  }
 
   fit <- eecop(y, xx)
   expect_equal(dim(predict(fit, xx, t = 1:3 / 4)), c(nrow(x), 3))
   expect_equal(dim(predict(fit, xx, "quantile", t = 1:3 / 4)), c(nrow(x), 3))
-  expect_equal(
-    dim(predict(fit, xx, "quantile", t = 1:3 / 4, weights = w)),
-    c(nrow(x), 3)
-  )
+
+  y <- cbind(y, y + rnorm(length(y)))
+  fit <- eecop(y, x)
+  expect_equal(dim(predict(fit, x, "mean")), c(nrow(x), 2))
+  expect_equal(dim(predict(fit, x, "variance", t = 1:3 / 4)), c(2, 2, nrow(x)))
+})
+
+
+test_that("bootstrap works", {
+  fit <- eecop(y, x)
+  fit_bs <- eecop_boot(fit, n_boot = 2)
+  expect_equal(names(fit_bs), c("orig", "boot"))
+  expect_length(fit_bs$boot, 2)
+  expect_true(all(sapply(fit_bs$boot, class) == "eecop"))
+
+  pred_exp <- predict(fit_bs, x, t = 1:3 / 4)
+  expect_equal(names(pred_exp), c("orig", "boot"))
+  expect_equal(dim(pred_exp$boot[[1]]), c(nrow(x), 3))
+  expect_length(pred_exp$boot, 2)
+
+  ci <- conf_int(fit_bs, x, t = 1:3 / 4)
+  expect_length(ci, 3)
+  expect_equal(names(ci), c("lower", "estimate", "upper"))
+  expect_equal(dim(ci$lower), c(nrow(x), 3))
+  expect_equal(dim(ci$estimate), c(nrow(x), 3))
+  expect_equal(dim(ci$upper), c(nrow(x), 3))
+
+  y <- cbind(y, y + 0.1 * rnorm(length(y)))
+  fit <- eecop(y, x)
+  fit_bs <- eecop_boot(fit, n_boot = 2)
+  ci <- conf_int(fit_bs, x, type = "variance")
+  expect_length(ci, 3)
+  expect_equal(names(ci), c("lower", "estimate", "upper"))
+  expect_equal(dim(ci$lower), c(2, 2, nrow(x)))
 })
