@@ -8,7 +8,15 @@
 \usage{
 eecop_boot(object, n_boot = 100, rxi = stats::rexp, cores = 1)
 
-\method{predict}{eecop_boot}(object, x, type = "expectile", t = 0.5, trafo = function(y) y, ...)
+\method{predict}{eecop_boot}(
+  object,
+  x,
+  type = "expectile",
+  t = 0.5,
+  trafo = function(y) y,
+  cores = 1,
+  ...
+)
 
 conf_int(
   object,
@@ -17,6 +25,7 @@ conf_int(
   t = 0.5,
   trafo = function(y) y,
   conf = 0.9,
+  cores = 1,
   ...
 )
 }
