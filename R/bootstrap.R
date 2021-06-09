@@ -80,7 +80,7 @@ eecop_boot <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
 predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
                                trafo = function(y) y, cores = 1, ...) {
   assert_that(inherits(object, "eecop_boot"))
-  assert_that(is_count(cores))
+  assert_that(is.count(cores))
 
   orig <- predict(object$orig, x = x, type = type, t = t, trafo = trafo)
 
