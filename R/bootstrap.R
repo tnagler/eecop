@@ -78,9 +78,18 @@ eecop_boot <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
 #' @rdname eecop_boot
 #' @export
 predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
-                               trafo = function(y) y, ...) {
+                               trafo = function(y) y, cores = 1, ...) {
   assert_that(inherits(object, "eecop_boot"))
+  assert_that(is.count(cores))
+
   orig <- predict(object$orig, x = x, type = type, t = t, trafo = trafo)
+
+  if (cores > 1) {
+    cl <- makeCluster(cores)
+    on.exit(try(stopCluster(cl), silent = TRUE))
+    lapply <- function(...) parLapply(cl, ...)
+  }
+
   boot <- lapply(
     object$boot,
     function(o) predict(o, x, type = type, t = t, trafo = trafo)
@@ -92,9 +101,12 @@ predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
 #' @export
 conf_int <- function(object, x, type = "expectile", t = 0.5,
                      trafo = function(y) y,
-                     conf = 0.9, ...) {
+                     conf = 0.9, cores = 1, ...) {
   assert_that(inherits(object, "eecop_boot"))
-  preds <- predict(object, x = x, type = type, t = t, trafo = trafo)
+  preds <- predict(object,
+    x = x, type = type, t = t,
+    trafo = trafo, cores = cores
+  )
   bdim <- dim(preds$boot[[1]])
   if (is.null(bdim)) bdim <- length(preds$boot[[1]])
   boot_arr <- array(unlist(preds$boot), dim = c(bdim, length(preds$boot)))
