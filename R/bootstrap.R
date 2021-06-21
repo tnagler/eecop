@@ -119,8 +119,8 @@ conf_int <- function(object, x, type = "expectile", t = 0.5,
   mid <- apply(boot_arr, fix, mean)
 
   list(
-    lower = preds$orig + mid - up,
+    lower = 2 * preds$orig - up,
     estimate = preds$orig,
-    upper = preds$orig + mid - low
+    upper =  2 * preds$orig - low
   )
 }
