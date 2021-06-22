@@ -65,7 +65,7 @@ eecop_boot <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
   args <- utils::modifyList(args, object$dots)
   do_one <- function(b) {
     xi <- rxi(n)
-    xi <- xi / mean(xi)
+    xi <- xi
     args$weights <- args$weights * xi
     do.call(eecop, args)
   }
