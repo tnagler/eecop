@@ -74,7 +74,7 @@ predict_mean <- function(object, y, x) {
   pred <- vapply(
     seq_len(nrow(x)),
     function(i) {
-      w <- object$w(x[i, , drop = FALSE]) * object$weights
+      w <- object$w(x[i, , drop = FALSE])
       colSums(y * w / sum(w))
     },
     numeric(ncol(y))
@@ -90,7 +90,7 @@ predict_variance <- function(object, y, x) {
   vapply(
     seq_len(nrow(x)),
     function(i) {
-      w <- object$w(x[i, , drop = FALSE]) * object$weights
+      w <- object$w(x[i, , drop = FALSE])
       stats::cov.wt(y, wt = w / sum(w))$cov
     },
     matrix(1, ncol(y), ncol(y))
@@ -105,15 +105,14 @@ predict_uniroot <- function(object, y, x, t, idfun) {
     psi = idfun,
     t = t,
     w = object$w,
-    weights = object$weights,
     range = range(y),
     tol = sd(y) / object$n
   )
   matrix(unlist(out), NROW(x), length(t), byrow = TRUE)
 }
 
-predict_uni_x <- function(x, psi, t, w, weights, range, tol) {
-  w_x <- w(x) * weights
+predict_uni_x <- function(x, psi, t, w, range, tol) {
+  w_x <- w(x)
   w_sel <- which(!is.nan(w_x))
   if (!length(w_sel)) {
     return(lapply(t, function(tt) NA))
