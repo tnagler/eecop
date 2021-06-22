@@ -4,7 +4,7 @@ root_solve <- function(f, range, tol) {
   root <- tryCatch(uniroot(f, range, tol = tol)$root, error = function(e) e)
 
   if (any(class(root) == "error")) {
-    x0 <- mean(range)
+    x0 <- mean(range) - (mean(range) - min(range)) / 20
     x1 <- mean(range) + (max(range) - mean(range)) / 20
     root <- root_solve_secant(f, x0, x1, tol)
   }
