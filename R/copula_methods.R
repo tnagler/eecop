@@ -26,7 +26,8 @@ fit_w_normal <- function(v, u, weights) {
 #' @noRd
 fit_w_vine <- function(v, u, weights, mult = 1, ...) {
   n <- NROW(u)
-  mult <- mult * n^(1 / 5 - 1 / 4.5)
+  d <- ncol(cbind(v, u))
+  mult <- mult * (choose(d + 1, 2))^(1 / 6) * n^(-1 / 6 + 1 / 5)
   c_YX <- rvinecopulib::vinecop(cbind(v, u), weights = weights, mult = mult, ...)
   c_Y <- rvinecopulib::vinecop(v, weights = weights, mult = mult, ...)
   c_Y_fix <- rvinecopulib::dvinecop(v, c_Y)
