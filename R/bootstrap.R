@@ -44,9 +44,8 @@
 #' preds <- predict(bs_fits, x[1:3, ])
 #' CI <- conf_int(bs_fits, x[1:3, ], type = "quantile", t = c(0.5, 0.9))
 eecop_boot <- function(object, n_boot = 100, rxi = stats::rexp, cores = 1) {
-  assert_that(inherits(object, "eecop"), is.count(n_boot))
+  assert_that(inherits(object, "eecop"), is.count(n_boot + 1), is.count(cores))
   assert_that(is.function(rxi), length(rxi(5)) == 5, is.numeric(rxi(5)))
-  assert_that(is.count(cores))
 
   if (cores > 1) {
     cl <- makeCluster(cores)
@@ -112,19 +111,25 @@ conf_int <- function(object, x, type = "expectile", t = 0.5,
     x = x, type = type, t = t,
     trafo = trafo, cores = cores
   )
-  bdim <- dim(preds$boot[[1]])
-  if (is.null(bdim)) bdim <- length(preds$boot[[1]])
-  boot_arr <- array(unlist(preds$boot), dim = c(bdim, length(preds$boot)))
+  n_boot <- length(preds$boot)
+  if (n_boot == 0) {
+    low <- mid <- up <- NA
+  } else {
+    bdim <- dim(preds$boot[[1]])
+    if (is.null(bdim)) bdim <- length(preds$boot[[1]])
+    boot_arr <- array(unlist(preds$boot), dim = c(bdim, length(preds$boot)))
 
-  alph <- (1 - conf) / 2
-  fix <- seq_along(dim(boot_arr)[-1])
-  low <- apply(boot_arr, fix, stats::quantile, probs = alph)
-  up <- apply(boot_arr, fix, stats::quantile, probs = 1 - alph)
-  mid <- apply(boot_arr, fix, mean)
+    alph <- (1 - conf) / 2
+    fix <- seq_along(dim(boot_arr)[-1])
+    low <- apply(boot_arr, fix, stats::quantile, probs = alph)
+    up <- apply(boot_arr, fix, stats::quantile, probs = 1 - alph)
+    mid <- apply(boot_arr, fix, mean)
+  }
 
   cis <- lapply(method, compute_ci,
                 orig = preds$orig, low = low, mid = mid, up = up)
   names(cis) <- method
+  if (length(cis) == 1) cis <- cis[[1]]
   cis
 }
 
