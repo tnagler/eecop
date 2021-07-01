@@ -27,7 +27,7 @@
 #' @param conf confidence level.
 #' @param ... unused.
 #'
-#' @return An objecvt of class `eccop_boot` containing the original [eecop]
+#' @return An object of class `eccop_boot` containing the original [eecop]
 #' object and bootstrap replicates.
 #' @seealso [eecop()], [predict.eecop_boot()]
 #' @export
@@ -98,10 +98,15 @@ predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
 }
 
 #' @rdname eecop_boot
+#' @param method method for computing confidence intervals; `"standard"`
+#'   (default), `"corrected"`, or `"debiased"`. If multiple choices are
+#'   provided, `conf_int()` returns a list of data frames for each method.
 #' @export
 conf_int <- function(object, x, type = "expectile", t = 0.5,
                      trafo = function(y) y,
-                     conf = 0.9, cores = 1, ...) {
+                     conf = 0.9, cores = 1,
+                     method = c("standard"),
+                     ...) {
   assert_that(inherits(object, "eecop_boot"))
   preds <- predict(object,
     x = x, type = type, t = t,
@@ -117,9 +122,30 @@ conf_int <- function(object, x, type = "expectile", t = 0.5,
   up <- apply(boot_arr, fix, stats::quantile, probs = 1 - alph)
   mid <- apply(boot_arr, fix, mean)
 
-  list(
-    lower = preds$orig + mid - up,
-    estimate = preds$orig,
-    upper = preds$orig + mid - low
-  )
+  cis <- lapply(method, compute_ci,
+                orig = preds$orig, low = low, mid = mid, up = up)
+  names(cis) <- method
+  cis
+}
+
+compute_ci <- function(method, orig, low, mid, up) {
+  if (method == "standard") {
+    list(
+      lower = 2 * orig - up,
+      estimate = orig,
+      upper = 2 * orig - low
+    )
+  } else if (method == "corrected") {
+    list(
+      lower = orig + mid - up,
+      estimate = orig,
+      upper = orig + mid - low
+    )
+  } else if (method == "debiased") {
+    list(
+      lower = 2 * (2 * orig - mid) - up,
+      estimate = 2 * orig - mid,
+      upper = 2 * (2 * orig - mid) - low
+    )
+  }
 }
