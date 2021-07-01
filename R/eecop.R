@@ -128,9 +128,8 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   )
 
   if (length(weights) == 0) {
-    weights <- rep(1, n)
+    weights <- rep(1 / n, n)
   }
-  weights <- weights / mean(weights)
   w <- function(x) {
     u <- compute_pseudo_obs(x, margins_X)
     u <- matrix(rep(u, each = n), n, ncol(u))
