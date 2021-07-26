@@ -26,7 +26,7 @@ conf_int(
   trafo = function(y) y,
   conf = 0.9,
   cores = 1,
-  method = c("standard"),
+  method = c("corrected"),
   ...
 )
 }
@@ -61,9 +61,9 @@ vector of length \code{NROW(object$y)} or a matrix with \code{NROW(object$y)} ro
 
 \item{conf}{confidence level.}
 
-\item{method}{method for computing confidence intervals; \code{"standard"}
-(default), \code{"corrected"}, or \code{"debiased"}. If multiple choices are
-provided, \code{conf_int()} returns a list of data frames for each method.}
+\item{method}{method for computing confidence intervals; \code{"standard"}, or
+\code{"corrected"} (default). If multiple choices are provided, \code{conf_int()}
+returns a list of data frames for each method.}
 }
 \value{
 An object of class \code{eccop_boot} containing the original \link{eecop}

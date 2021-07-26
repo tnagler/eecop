@@ -97,14 +97,14 @@ predict.eecop_boot <- function(object, x, type = "expectile", t = 0.5,
 }
 
 #' @rdname eecop_boot
-#' @param method method for computing confidence intervals; `"standard"`
-#'   (default), `"corrected"`, or `"debiased"`. If multiple choices are
-#'   provided, `conf_int()` returns a list of data frames for each method.
+#' @param method method for computing confidence intervals; `"standard"`, or
+#' `"corrected"` (default). If multiple choices are provided, `conf_int()`
+#' returns a list of data frames for each method.
 #' @export
 conf_int <- function(object, x, type = "expectile", t = 0.5,
                      trafo = function(y) y,
                      conf = 0.9, cores = 1,
-                     method = c("standard"),
+                     method = c("corrected"),
                      ...) {
   assert_that(inherits(object, "eecop_boot"))
   preds <- predict(object,
@@ -146,11 +146,7 @@ compute_ci <- function(method, orig, low, mid, up) {
       estimate = orig,
       upper = orig + mid - low
     )
-  } else if (method == "debiased") {
-    list(
-      lower = 2 * (2 * orig - mid) - up,
-      estimate = 2 * orig - mid,
-      upper = 2 * (2 * orig - mid) - low
-    )
+  } else {
+    stop(paste0("bootstrap method '", method, "' not implemented."))
   }
 }
