@@ -123,7 +123,8 @@ eecop <- function(y, x, copula_method = "vine", margin_method = "kde",
   w_model <- fit_w(V, U,
     method = copula_method,
     weights = weights,
-    var_types = c(var_types_Y, var_types_X),
+    var_types_Y = var_types_Y,
+    var_types_X = var_types_X,
     ...
   )
 
@@ -162,12 +163,12 @@ fit_margin <- function(x, method, weights) {
   )
 }
 
-fit_w <- function(v, u, method, weights, var_types, ...) {
-  if (length(var_types) == 1) {
+fit_w <- function(v, u, method, weights, var_types_Y, var_types_X, ...) {
+  if ((length(var_types_Y) == 1) & (length(var_types_X) == 0)) {
     return(function(u) rep(1, NROW(u)))
   }
   switch(method,
-    "vine" = fit_w_vine(v, u, weights, ...),
+    "vine" = fit_w_vine(v, u, weights, var_types_Y, var_types_X, ...),
     "normal" = fit_w_normal(v, u, weights),
     "kde" = fit_w_kde(v, u, weights, ...)
   )

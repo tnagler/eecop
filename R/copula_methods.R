@@ -24,16 +24,45 @@ fit_w_normal <- function(v, u, weights) {
 }
 
 #' @noRd
-fit_w_vine <- function(v, u, weights, mult = 1, ...) {
-  n <- NROW(u)
-  d <- ncol(cbind(v, u))
-  mult <- mult * (choose(d + 1, 2))^(1 / 6) * n^(-1 / 6 + 1 / 5)
-  c_YX <- rvinecopulib::vinecop(cbind(v, u), weights = weights, mult = mult, ...)
-  c_Y <- rvinecopulib::vinecop(v, weights = weights, mult = mult, ...)
+fit_w_vine <- function(v, u, weights, var_types_Y, var_types_X, mult = 1, ...) {
+  # bandwidth adjustment
+  d <- max(sum(c(var_types_Y, var_types_X) == "c"), 1)
+  mult <- mult * (choose(d + 1, 2))^(1 / 6) * NROW(u)^(-1 / 6 + 1 / 5)
+
+  # fit models for copula ratio
+  c_YX <- rvinecopulib::vinecop(
+    data = merge_psobs(v, u, var_types_Y, var_types_X),
+    var_types = c(var_types_Y, var_types_X),
+    weights = weights,
+    mult = mult,
+    ...
+  )
+  c_Y <- rvinecopulib::vinecop(
+    data = v,
+    var_types = var_types_Y,
+    weights = weights,
+    mult = mult,
+    ...
+  )
+
+  # return lambda computing the weight for new data
   c_Y_fix <- rvinecopulib::dvinecop(v, c_Y)
   function(u_new) {
-    rvinecopulib::dvinecop(cbind(v, u_new), c_YX) / c_Y_fix
+    u_new <- merge_psobs(v, u_new, var_types_Y, var_types_X)
+    rvinecopulib::dvinecop(u_new, c_YX) / c_Y_fix
   }
+}
+
+merge_psobs <- function(v, u, var_types_v, var_types_u) {
+  if (all(c(var_types_v, var_types_u) == "c")) {
+    return(cbind(v, u))
+  }
+  cbind(
+    v[, seq_along(var_types_v)],
+    u[, seq_along(var_types_u)],
+    v[, -seq_along(var_types_v)],
+    u[, -seq_along(var_types_u)]
+  )
 }
 
 #' @importFrom stats cov
