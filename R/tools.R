@@ -12,7 +12,7 @@ compute_pseudo_obs <- function(x, margins) {
       lv <- as.numeric(x[, k]) - 1
       lv0 <- which(lv == 0)
       lv[lv0] <- 1
-      xlv <- factor(levels(x[, k])[lv], levels = levels(x[, k]))
+      xlv <- ordered(levels(x[, k])[lv], levels = levels(x[, k]))
       u_sub <- margins[[k]](xlv)
       u_sub[lv0] <- 0
       u <- cbind(u, u_sub)
