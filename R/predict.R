@@ -50,6 +50,7 @@ predict.eecop <- function(object,
                           ...) {
   assert_that(is.string(type))
   y <- as.data.frame(trafo(object$y))
+  x <- process_x_new(object, x)
   switch(type,
     "mean" = predict_mean(object, y, x),
     "variance" = predict_variance(object, y, x),
@@ -70,7 +71,6 @@ process_x_new <- function(object, x) {
 }
 
 predict_mean <- function(object, y, x) {
-  x <- process_x_new(object, x)
   pred <- vapply(
     seq_len(nrow(x)),
     function(i) {
@@ -86,7 +86,6 @@ predict_mean <- function(object, y, x) {
 }
 
 predict_variance <- function(object, y, x) {
-  x <- process_x_new(object, x)
   vapply(
     seq_len(nrow(x)),
     function(i) {
@@ -98,7 +97,6 @@ predict_variance <- function(object, y, x) {
 }
 
 predict_uniroot <- function(object, y, x, t, idfun) {
-  x <- process_x_new(object, x)
   out <- sapply(
     seq_len(nrow(x)),
     function(i, ...) predict_uni_x(x[i, , drop = FALSE], ...),
@@ -133,7 +131,6 @@ predict_quantile <- function(object, y, x, t = 0.5) {
   if (ncol(y) > 1) {
     stop("can't predict quantiles for multivariate response.")
   }
-  x <- process_x_new(object, x)
   y <- y[[1]]
   assert_that(is.numeric(t), all((0 < t) & (t < 1)))
 
@@ -147,7 +144,6 @@ predict_expectile <- function(object, y, x, t = 0.5) {
   if (ncol(y) > 1) {
     stop("can't predict expectiles for multivariate response.")
   }
-  x <- process_x_new(object, x)
   y <- y[[1]]
   assert_that(is.numeric(t), all((0 < t) & (t < 1)))
 
@@ -194,7 +190,6 @@ predict_expectile <- function(object, y, x, t = 0.5) {
 #' ## solve estimating equation
 #' solve_eecop(fit, x[1:3, ], idfun = idfun, theta_start = rep(0, 2))
 solve_eecop <- function(object, x, idfun, theta_start, ...) {
-  x <- process_x_new(object, x)
   lapply(
     seq_len(nrow(x)),
     function(i, ...) {
