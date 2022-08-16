@@ -1,6 +1,6 @@
 #' @noRd
 #' @importFrom stats uniroot
-root_solve <- function(f, range, tol) {
+root_solve <- function(f, range, tol = .Machine$double.eps^0.25) {
   root <- tryCatch(uniroot(f, range, tol = tol)$root, error = function(e) e)
 
   if (any(class(root) == "error")) {
