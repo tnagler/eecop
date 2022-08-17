@@ -105,13 +105,12 @@ predict_uniroot <- function(object, y, x, t, idfun) {
     psi = idfun,
     t = t,
     w = object$w,
-    range = range(y),
-    tol = sd(y) / object$n
+    range = range(y)
   )
   matrix(unlist(out), NROW(x), length(t), byrow = TRUE)
 }
 
-predict_uni_x <- function(x, psi, t, w, range, tol) {
+predict_uni_x <- function(x, psi, t, w, range, tol = .Machine$double.eps^0.25) {
   w_x <- w(x)
   w_sel <- which(!is.nan(w_x))
   if (!length(w_sel)) {
