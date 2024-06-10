@@ -56,14 +56,15 @@ fit_w_kde <- function(v, u, weights, mult = 1, ...) {
     f_Y_fix <- ks::dnorm.mixt(
       x = v,
       mus = v,
-      sigmas = rep(sqrt(bws), n),
+      sigmas = rep(sqrt(bws[1, 1]), n),
       props = weights / sum(weights)
     )
   } else {
     f_Y_fix <- ks::dmvnorm.mixt(
       x = v,
       mus = v,
-      Sigmas = bws[1:d, 1:d],
+      Sigmas = replicate(n, bws[1:d, 1:d], simplify = FALSE)
+        |> do.call(rbind, args = _),
       props = weights / sum(weights)
     )
   }
